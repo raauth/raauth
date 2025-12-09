@@ -11,7 +11,10 @@ import {
 } from "@/components/ui/dialog";
 import { CreateOrganizationForm } from "@/components/forms/create-organization-form";
 import { Button } from "@/components/ui/button";
+import { OrganizationSwitcher } from "@/components/account/organization-switcher";
+import { getOrganizations } from "@/lib/account-actions/get-organization";
 export default async function Page() {
+  const organizations = await getOrganizations();
   const session = await auth.api.getSession({
     headers: await headers(), // you need to pass the headers object.
   });
@@ -21,7 +24,8 @@ export default async function Page() {
   }
 
   return (
-    <Dialog>
+    <>
+      <Dialog>
       <DialogTrigger asChild>
         <Button>Criar organização</Button>
       </DialogTrigger>
@@ -32,5 +36,8 @@ export default async function Page() {
         </DialogHeader>
       </DialogContent>
     </Dialog>
+
+    <OrganizationSwitcher organizations={organizations} />
+    </>
   );
 }
