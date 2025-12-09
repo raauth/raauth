@@ -31,8 +31,9 @@ import { getErrorMessage } from "@/lib/errors";
 const loginInfos = z.object({
   email: z
     .email({ message: "O e-mail digitado não é válido" })
-    .min(1, { message: "Precisamos de um e-mail ou nome de usuário" }),
-  password: z.string(),
+    .min(1, { message: "Precisamos de um e-mail ou nome de usuário" })
+    .trim(),
+  password: z.string().min(1, { message: "Precisamos de uma senha" }).trim(),
 });
 
 export function LoginForm() {
