@@ -1,7 +1,13 @@
+// dependências:
 import type { Metadata } from "next";
+
+// arquivos:
 import "./globals.css";
 
+// fontes:
 import { Averia_Serif_Libre, Geist, Geist_Mono } from "next/font/google";
+
+// componentes:
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { Toaster } from "@/components/ui/sonner"
 
