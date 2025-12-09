@@ -28,6 +28,7 @@ import { authClient } from "@/lib/auth-client";
 import { getErrorMessage } from "@/lib/errors";
 
 // esquema do zod:
+// TODO: melhorar a validação para não aceitar e-mails vazios
 const loginInfos = z.object({
   email: z
     .email({ message: "O e-mail digitado não é válido" })
