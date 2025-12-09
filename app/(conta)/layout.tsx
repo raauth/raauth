@@ -2,7 +2,7 @@ import { Card } from "@/components/ui/card";
 import { getServerSession } from "@/lib/auth-actions/get-server-session";
 import { redirect } from "next/navigation";
 
-export default async function Layout({
+export default async function CardLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
