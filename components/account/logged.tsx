@@ -24,39 +24,49 @@ interface LoggedAccountProps {
   session?: {
     user?: {
       name?: string | null;
+      email?: string | null;
       role?: string | null;
       image?: string | null;
     } | null;
   } | null;
+  organization?: {
+    name?: string | null;
+  } | null;
 }
 
-export function LoggedAccount({ session }: LoggedAccountProps) {
+export function LoggedAccount({ session, organization }: LoggedAccountProps) {
   const router = useRouter();
 
   return (
     <>
       <DropdownMenuTrigger asChild>
-        <div className="flex items-center gap-2 select-none group">
-          <div className="flex flex-col text-end">
-            <span className="text-primary underline-offset-4 group-hover:underline text-sm font-medium">
-              {session?.user?.name?.split(" ")[0]}
-            </span>
-            <span className="text-primary text-xs">Amper Elinsa</span>
-          </div>
-          <Avatar>
-            <AvatarImage src={session?.user?.image || undefined }
-              alt="@evilrabbit" />
-            <AvatarFallback><SquareUser /></AvatarFallback>
-          </Avatar>
-        </div>
+        <Avatar>
+          <AvatarImage src={session?.user?.image || undefined}
+            alt="@evilrabbit" />
+          <AvatarFallback><SquareUser /></AvatarFallback>
+        </Avatar>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end">
         {/* Conteúdo do menu suspenso vai aqui */}
-        <DropdownMenuLabel>Olá, {session?.user?.name}</DropdownMenuLabel>
+        <DropdownMenuLabel className="flex flex-col">
+          {session?.user?.name}
+          <span className="text-xs font-normal text-muted-foreground">{session?.user?.email}</span>
+        </DropdownMenuLabel>
+
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <AccessLevelIcon level={session?.user?.role} />
+          { organization && (
+            <DropdownMenuItem>
+              {organization?.name}
+            </DropdownMenuItem>
+          )}
+          
+          { session?.user?.role && (
+            <DropdownMenuItem>
+              {session?.user?.role}
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem
             variant="destructive"
             onClick={async () => {

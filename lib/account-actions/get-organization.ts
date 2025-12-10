@@ -1,4 +1,4 @@
-import { db } from "../db";
+import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/account-actions/user";
 
 export async function getOrganizations() {

@@ -14,13 +14,14 @@ import { LoggedAccount } from "@/components/account/logged";
 
 export function Account() {
   const { data: session } = authClient.useSession();
+  const { data: organization } = authClient.useActiveOrganization();
 
   return (
     <DropdownMenu>
       {!session ? (
         <UnloggedAccount />
       ) : (
-        <LoggedAccount session={session} />
+        <LoggedAccount session={session} organization={organization} />
       )}
     </DropdownMenu>
   );
