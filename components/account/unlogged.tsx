@@ -25,13 +25,13 @@ export function UnloggedAccount() {
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
-            <Link href="/conta/entrar">
+            <Link href="/entrar">
               <LogIn />
               Entrar
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link href="/conta/criar">
+            <Link href="/criar-conta">
               <UserPlus />
               Criar conta
             </Link>

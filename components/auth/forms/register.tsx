@@ -95,7 +95,7 @@ export function RegisterForm() {
           sessionStorage.setItem('registeredEmail', ctx.data.user.email);
 
           setTimeout(() => {
-            router.push("/conta/criar/confirmar");
+            router.push("/criar-conta/confirmar");
           }, 1000);
         },
         onError: (ctx) => {

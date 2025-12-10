@@ -63,7 +63,7 @@ export function LoggedAccount({ session }: LoggedAccountProps) {
               await authClient.signOut({
                 fetchOptions: {
                   onSuccess: () => {
-                    router.push("/conta/entrar"); // redirect to login page
+                    router.push("/entrar"); // redirect to login page
                   },
                 },
               });

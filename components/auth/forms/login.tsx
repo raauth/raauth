@@ -116,7 +116,7 @@ export function LoginForm() {
                   className="text-muted-foreground hover:text-black dark:hover:text-white p-0 h-3.5"
                   asChild
                 >
-                  <Link href="/conta/esqueci-a-senha">Esqueceu sua senha?</Link>
+                  <Link href="/esqueci-a-senha">Esqueceu sua senha?</Link>
                 </Button>
               </FormLabel>
               <FormControl>
