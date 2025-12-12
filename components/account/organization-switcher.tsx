@@ -1,38 +1,51 @@
-"use client"
+"use client";
 
-// libs e funções:
-import { authClient } from "@/lib/auth-client";
-
-import { type Organization } from "@/prisma/client/client";
-
-interface OrganizationSwitcherProps {
- organizations: Organization[]
-}
-
+import { toast } from "sonner";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
+import type { Organization } from "@/prisma/client/client";
+import { authClient } from "@/lib/auth-client";
 
-export function OrganizationSwitcher({organizations}: OrganizationSwitcherProps) {
+type OrganizationSwitcherProps = {
+  organizations: Organization[];
+};
+
+export function OrganizationSwitcher({
+  organizations,
+}: OrganizationSwitcherProps) {
   const { data: activeOrganization } = authClient.useActiveOrganization();
 
   const handleChangeOrganization = async (organizationId: string) => {
-    await authClient.organization.setActive({
-      organizationId,
-    });
+    try {
+      const { error } = await authClient.organization.setActive({
+        organizationId,
+      });
+
+      if (error) {
+        console.error(error);
+        toast.error("Failed to switch organization");
+        return;
+      }
+
+      toast.success("Organization switched successfully");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to switch organization");
+    }
   };
 
-  return(
-    <Select 
-      onValueChange={handleChangeOrganization} 
-      defaultValue={activeOrganization?.id}
+  return (
+    <Select
+      onValueChange={handleChangeOrganization}
+      value={activeOrganization?.id}
     >
-      <SelectTrigger>
-        <SelectValue placeholder="Selecione uma organização" />
+      <SelectTrigger className="w-[180px]">
+        <SelectValue placeholder="Theme" />
       </SelectTrigger>
       <SelectContent>
         {organizations.map((organization) => (
@@ -42,5 +55,5 @@ export function OrganizationSwitcher({organizations}: OrganizationSwitcherProps)
         ))}
       </SelectContent>
     </Select>
-  )
+  );
 }
