@@ -25,7 +25,7 @@ export async function Account() {
       {!session ? (
         <UnloggedAccount />
       ) : (
-        <LoggedAccount session={session} organization={org[0]} />
+        <LoggedAccount session={session} organizations={org} />
       )}
     </DropdownMenu>
   );
