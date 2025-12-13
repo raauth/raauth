@@ -1,5 +1,4 @@
 // importações de dependências:
-import Link from "next/link";
 import type { Metadata } from "next";
 
 // importações de fontes:
@@ -11,7 +10,6 @@ import "./globals.css";
 // importações de componentes:
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { Toaster } from "@/components/ui/sonner"
-// import { ProgressBar } from "@/components/ui/progress";
 import { MoveRightIcon } from "lucide-react";
 
 const geistSans = Geist({
@@ -45,17 +43,17 @@ export default function Page() {
             <h1 className="text-5xl font-mono border-r border-black dark:border-white pr-4">404</h1>
             <div>
               <p>Hum... Não temos esta página.</p>
-              <Link
+              {/* Utiliza a tag <a> para forçar o recarregamento da página e garantir a troca correta de layout ao sair da página 404. */}
+              <a
                 href="/"
                 className="underline flex items-center gap-2"
               >
                 <p>Voltar à página inicial</p>
                 <MoveRightIcon size={18} />
-              </Link>
+              </a>
             </div>
           </main>
           <Toaster visibleToasts={1} />
-          {/* <ProgressBar /> */}
         </ThemeProvider>
       </body>
     </html>
