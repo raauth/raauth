@@ -1,7 +1,5 @@
-"use client";
-
 // funções e libs:
-import { authClient } from "@/lib/auth-client";
+import { auth } from "@/lib/auth";
 
 // componentes:
 import {
@@ -11,17 +9,23 @@ import {
 // ícones:
 import { UnloggedAccount } from "@/components/account/unlogged";
 import { LoggedAccount } from "@/components/account/logged";
+import { headers } from "next/headers";
+import { getOrganizations } from "@/lib/account-actions/get-organization";
 
-export function Account() {
-  const { data: session } = authClient.useSession();
-  const { data: organization } = authClient.useActiveOrganization();
+export async function Account() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  const org = await getOrganizations();
+
 
   return (
     <DropdownMenu>
       {!session ? (
         <UnloggedAccount />
       ) : (
-        <LoggedAccount session={session} organization={organization} />
+        <LoggedAccount session={session} organization={org[0]} />
       )}
     </DropdownMenu>
   );
