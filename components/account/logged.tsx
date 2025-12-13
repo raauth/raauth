@@ -3,9 +3,11 @@
 // funções e libs:
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
+import { type Organization } from "@/prisma/client/client";
 
 // componentes:
 import { AccessLevelIcon } from "@/components/account/access-level-icon";
+import { OrganizationSwitcher } from "@/components/account/organization-switcher";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   DropdownMenu,
@@ -35,12 +37,10 @@ interface LoggedAccountProps {
       image?: string | null;
     } | null;
   } | null;
-  organization?: {
-    name?: string | null;
-  } | null;
+  organizations: Organization[];
 }
 
-export function LoggedAccount({ session, organization }: LoggedAccountProps) {
+export function LoggedAccount({ session, organizations }: LoggedAccountProps) {
   const router = useRouter();
 
   return (
@@ -64,21 +64,7 @@ export function LoggedAccount({ session, organization }: LoggedAccountProps) {
 
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          {organization && (
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger>
-                  <BriefcaseBusiness /> {organization?.name}
-                </DropdownMenuSubTrigger>
-                <DropdownMenuPortal>
-                  <DropdownMenuSubContent>
-                    <DropdownMenuLabel><ArrowDownUp />Alterar organizaç̧̃o</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem>Message</DropdownMenuItem>
-                    <DropdownMenuItem>More...</DropdownMenuItem>
-                  </DropdownMenuSubContent>
-                </DropdownMenuPortal>
-              </DropdownMenuSub>
-          )}
+          {organizations.length > 0 && <OrganizationSwitcher organizations={organizations} />}
 
           {session?.user?.role && (
             <DropdownMenuItem>
