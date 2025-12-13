@@ -8,16 +8,22 @@ import { useRouter } from "next/navigation";
 import { AccessLevelIcon } from "@/components/account/access-level-icon";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
+  DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuPortal,
   DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu"
 
 // ícones:
-import { LogOut, SquareUser } from "lucide-react";
+import { ArrowDownUp, BriefcaseBusiness, CircleUser, LogOut, SquareUser } from "lucide-react";
 
 
 interface LoggedAccountProps {
@@ -42,8 +48,10 @@ export function LoggedAccount({ session, organization }: LoggedAccountProps) {
       <DropdownMenuTrigger asChild>
         <Avatar>
           <AvatarImage src={session?.user?.image || undefined}
-            alt="@evilrabbit" />
-          <AvatarFallback><SquareUser /></AvatarFallback>
+            alt="Foto de perfil do usuário" />
+          <AvatarFallback aria-label="Avatar padrão">
+            <CircleUser size={20} />
+          </AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
 
@@ -56,13 +64,23 @@ export function LoggedAccount({ session, organization }: LoggedAccountProps) {
 
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          { organization && (
-            <DropdownMenuItem>
-              {organization?.name}
-            </DropdownMenuItem>
+          {organization && (
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <BriefcaseBusiness /> {organization?.name}
+                </DropdownMenuSubTrigger>
+                <DropdownMenuPortal>
+                  <DropdownMenuSubContent>
+                    <DropdownMenuLabel><ArrowDownUp />Alterar organizaç̧̃o</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem>Message</DropdownMenuItem>
+                    <DropdownMenuItem>More...</DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuPortal>
+              </DropdownMenuSub>
           )}
-          
-          { session?.user?.role && (
+
+          {session?.user?.role && (
             <DropdownMenuItem>
               {session?.user?.role}
             </DropdownMenuItem>
