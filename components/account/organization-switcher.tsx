@@ -10,6 +10,8 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuPortal,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuSub,
   DropdownMenuSubContent,
@@ -97,18 +99,13 @@ export function OrganizationSwitcher({ organizations }: OrganizationSwitcherProp
             Selecione uma organização
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          {organizations.map((organization) => (
-            <DropdownMenuItem
-              key={organization.id}
-              onClick={() => handleChangeOrganization(organization.id)}
-              className="justify-between"
-            >
-              {organization.name || <Skeleton className="w-20 h-4" />}
-              {activeOrganization?.id === organization.id && (
-                <Check className="size-4" />
-              )}
-            </DropdownMenuItem>
-          ))}
+          <DropdownMenuRadioGroup value={activeOrganization?.id} onValueChange={handleChangeOrganization}>
+            {organizations.map((organization) => (
+              <DropdownMenuRadioItem key={organization.id} value={organization.id}>
+                {organization.name}
+              </DropdownMenuRadioItem>
+            ))}
+          </DropdownMenuRadioGroup>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => router.push("/create-organization")}>
             <PlusCircle className="size-4" />
