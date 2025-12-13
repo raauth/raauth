@@ -2,45 +2,120 @@
 
 // libs e funções:
 import { authClient } from "@/lib/auth-client";
-
 import { type Organization } from "@/prisma/client/client";
+import { useRouter } from "next/navigation";
+
+// componentes:
+import {
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuPortal,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+} from "@/components/ui/dropdown-menu"
+import { toast } from "sonner"
+
+// icons:
+import { ArrowDownUp, BriefcaseBusiness, Check, PlusCircle } from "lucide-react";
+import { Skeleton } from "../ui/skeleton";
 
 interface OrganizationSwitcherProps {
- organizations: Organization[]
+  organizations: Organization[]
 }
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+function SkeletonOrganization() {
+  return (
+    <div className="flex items-center gap-2">
+      <Skeleton className="size-4 rounded-full" />
+      <Skeleton className="w-20 h-3" />
+    </div>
+  )
+}
 
-export function OrganizationSwitcher({organizations}: OrganizationSwitcherProps) {
-  const { data: activeOrganization } = authClient.useActiveOrganization();
+export function OrganizationSwitcher({ organizations }: OrganizationSwitcherProps) {
+  const router = useRouter();
+  const { data: activeOrganization, isPending } = authClient.useActiveOrganization();
+
+  // Se houver apenas uma organização (ou nenhuma), exibe apenas o item desabilitado
+  if (organizations.length <= 1) {
+    return (
+      <DropdownMenuItem disabled>
+        { isPending ? (
+          <SkeletonOrganization />
+        ) : (
+          <>
+            <BriefcaseBusiness />
+            {activeOrganization?.name}
+          </>
+        )}
+      </DropdownMenuItem>
+    )
+  }
+
+  if (isPending) {
+    return (
+      <DropdownMenuSub>
+        <DropdownMenuSubTrigger>
+          <SkeletonOrganization />
+        </DropdownMenuSubTrigger>
+      </DropdownMenuSub>
+    )
+  }
 
   const handleChangeOrganization = async (organizationId: string) => {
-    await authClient.organization.setActive({
-      organizationId,
-    });
+    toast.promise(
+      authClient.organization.setActive({
+        organizationId,
+      }),
+      {
+        loading: "Alterando organização",
+        success: "Organização alterada",
+        error: "Houve um erro inesperado ao alterar organização",
+      }
+    );
+    router.refresh();
   };
 
-  return(
-    <Select 
-      onValueChange={handleChangeOrganization} 
-      defaultValue={activeOrganization?.id}
-    >
-      <SelectTrigger>
-        <SelectValue placeholder="Selecione uma organização" />
-      </SelectTrigger>
-      <SelectContent>
-        {organizations.map((organization) => (
-          <SelectItem key={organization.id} value={organization.id}>
-            {organization.name}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+  return (
+    <DropdownMenuSub>
+      <DropdownMenuSubTrigger>
+        {activeOrganization?.name ? (
+          <>
+            <BriefcaseBusiness />
+            {activeOrganization.name}
+          </>
+        ) : (
+          <SkeletonOrganization />
+        )}
+      </DropdownMenuSubTrigger>
+      <DropdownMenuPortal>
+        <DropdownMenuSubContent>
+          <DropdownMenuLabel className="flex items-center gap-2 text-muted-foreground">
+            <ArrowDownUp className="size-4" />
+            Selecione uma organização
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          {organizations.map((organization) => (
+            <DropdownMenuItem
+              key={organization.id}
+              onClick={() => handleChangeOrganization(organization.id)}
+              className="justify-between"
+            >
+              {organization.name || <Skeleton className="w-20 h-4" />}
+              {activeOrganization?.id === organization.id && (
+                <Check className="size-4" />
+              )}
+            </DropdownMenuItem>
+          ))}
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={() => router.push("/create-organization")}>
+            <PlusCircle className="size-4" />
+            Criar nova organização
+          </DropdownMenuItem>
+        </DropdownMenuSubContent>
+      </DropdownMenuPortal>
+    </DropdownMenuSub>
   )
 }
