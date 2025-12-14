@@ -31,7 +31,7 @@ function SkeletonOrganization() {
   return (
     <div className="flex items-center gap-2">
       <Skeleton className="size-4 rounded-full" />
-      <Skeleton className="w-20 h-3" />
+      <Skeleton className="w-20 h-4" />
     </div>
   )
 }
