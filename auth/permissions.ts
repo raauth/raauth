@@ -19,3 +19,4 @@ const owner = ac.newRole({
   ...ownerAc.statements
 });
 
+export { ac, owner, admin, member };
