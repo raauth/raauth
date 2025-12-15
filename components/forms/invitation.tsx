@@ -32,7 +32,6 @@ export function InvitationForm() {
   return (
     <Form {...form}>
       <form 
-        className="flex items-center"
         onSubmit={form.handleSubmit(onSubmit)}
       >
         <FormField
@@ -41,15 +40,18 @@ export function InvitationForm() {
           render={({ field }) => (
             <FormItem>
               <FormControl>
-                <>
+                <div className="flex items-center w-full">
                   <Input 
                   {...field} 
-                  className="rounded-r-none"
+                  className="rounded-r-none w-full"
                   placeholder="email@exemplo.com" 
                   autoComplete="off" 
                 />
-                <Button type="submit">Enviar convite</Button>
-                </>
+                <Button 
+                  type="submit"
+                  className="rounded-l-none"
+                >Enviar convite</Button> 
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
