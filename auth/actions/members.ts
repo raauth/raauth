@@ -1,7 +1,9 @@
 "use server"
 
 import { auth } from "@/lib/auth"
+import { headers } from "next/headers";
 
+// função para adicionar um membro a uma organização
 interface AddMemberProps {
   organizationId: string;
   userId: string;
@@ -23,6 +25,36 @@ export async function addMember(
         organizationId,
         role
       }
+    })
+    return { success: true }
+  } catch (error) {
+    console.log(error)
+    return { success: false }
+  }
+}
+
+// função para remover um membro de uma organização
+interface RemoveMemberProps {
+  userId: string;
+  organizationId: string;
+}
+
+interface RemoveMemberResult {
+  success: boolean;
+}
+
+export async function removeMember(
+  _prevState: RemoveMemberResult | null,
+  { organizationId, userId }: RemoveMemberProps
+): Promise<RemoveMemberResult> {
+  try {
+    await auth.api.removeMember({
+      body: {
+        memberIdOrEmail: userId, // required
+        organizationId,
+      },
+
+      headers: await headers()
     })
     return { success: true }
   } catch (error) {
