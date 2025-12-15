@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { getServerSession } from "@/lib/auth-actions/get-server-session";
+import { getServerSession } from "@/auth/actions/session";
 import { redirect } from "next/navigation";
 
 export default async function CardLayout({
