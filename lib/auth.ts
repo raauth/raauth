@@ -1,6 +1,7 @@
 // better-auth
 import { betterAuth } from "better-auth";
 import { organization } from "better-auth/plugins"
+import { ac, owner, admin, member } from "@/auth/permissions"
 
 // adaptadores do de conexão do banco de dados:
 import { prismaAdapter } from "better-auth/adapters/prisma";
@@ -31,7 +32,14 @@ export const auth = betterAuth({
     },
   },
   plugins: [
-    organization(),
+    organization({
+      ac,
+      roles: {
+        owner,
+        admin,
+        member
+      }
+    }),
     nextCookies()
   ]
 });

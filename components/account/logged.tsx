@@ -3,21 +3,29 @@
 // funções e libs:
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
+import { type Organization } from "@/prisma/client/client";
 
 // componentes:
 import { AccessLevelIcon } from "@/components/account/access-level-icon";
+import { OrganizationSwitcher } from "@/components/account/organization-switcher";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
+  DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuPortal,
   DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu"
 
 // ícones:
-import { LogOut, SquareUser } from "lucide-react";
+import { ArrowDownUp, BriefcaseBusiness, CircleUser, LogOut, SquareUser } from "lucide-react";
 
 
 interface LoggedAccountProps {
@@ -29,12 +37,10 @@ interface LoggedAccountProps {
       image?: string | null;
     } | null;
   } | null;
-  organization?: {
-    name?: string | null;
-  } | null;
+  organizations: Organization[];
 }
 
-export function LoggedAccount({ session, organization }: LoggedAccountProps) {
+export function LoggedAccount({ session, organizations }: LoggedAccountProps) {
   const router = useRouter();
 
   return (
@@ -42,8 +48,10 @@ export function LoggedAccount({ session, organization }: LoggedAccountProps) {
       <DropdownMenuTrigger asChild>
         <Avatar>
           <AvatarImage src={session?.user?.image || undefined}
-            alt="@evilrabbit" />
-          <AvatarFallback><SquareUser /></AvatarFallback>
+            alt="Foto de perfil do usuário" />
+          <AvatarFallback aria-label="Avatar padrão">
+            <CircleUser size={20} />
+          </AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
 
@@ -56,13 +64,9 @@ export function LoggedAccount({ session, organization }: LoggedAccountProps) {
 
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          { organization && (
-            <DropdownMenuItem>
-              {organization?.name}
-            </DropdownMenuItem>
-          )}
-          
-          { session?.user?.role && (
+          {organizations.length > 0 && <OrganizationSwitcher organizations={organizations} />}
+
+          {session?.user?.role && (
             <DropdownMenuItem>
               {session?.user?.role}
             </DropdownMenuItem>
