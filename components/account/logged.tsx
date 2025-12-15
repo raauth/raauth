@@ -26,6 +26,7 @@ import {
 
 // ícones:
 import { ArrowDownUp, BriefcaseBusiness, CircleUser, LogOut, SquareUser } from "lucide-react";
+import { AdminPanel } from "./buttons/admin-panel";
 
 
 interface LoggedAccountProps {
@@ -71,6 +72,11 @@ export function LoggedAccount({ session, organizations }: LoggedAccountProps) {
               {session?.user?.role}
             </DropdownMenuItem>
           )}
+
+          
+            <AdminPanel />
+          
+
           <DropdownMenuItem
             variant="destructive"
             onClick={async () => {
