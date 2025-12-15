@@ -14,7 +14,7 @@ export function AllUsers({ users }: { users: User[] }) {
         <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">Outros usuários</h3>
         <p className="text-muted-foreground text-sm">Adicione usuários que não fazem parte desta organização</p>
       </div>
-      <Card className="p-4 sm:max-w-full lg:max-w-3/4 2xl:max-w-2/4">
+      <Card className="p-4">
         {/* Renderiza a tabela de dados usando as colunas definidas e lista de usuários */}
         <DataTable columns={usersColumns} data={users} />
       </Card>

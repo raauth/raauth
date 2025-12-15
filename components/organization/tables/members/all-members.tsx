@@ -17,7 +17,7 @@ export function AllMembers({ members }: { members: Member[] }) {
         <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">Membros</h3>
         <p className="text-muted-foreground text-sm">Usuários que fazem parte desta organização</p>
       </div>
-      <Card className="p-4 sm:max-w-full lg:max-w-3/4 2xl:max-w-2/4">
+      <Card className="p-4">
         {/* Renderiza a tabela de dados usando as colunas definidas e lista de usuários */}
         <MembersDataTable columns={membersColumns} data={members} />
       </Card>
