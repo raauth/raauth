@@ -1,7 +1,6 @@
 "use server"
 
 import { auth } from "@/lib/auth"
-import { toast } from "sonner";
 
 interface AddMemberProps {
   organizationId: string;
@@ -9,7 +8,14 @@ interface AddMemberProps {
   role: "member" | "owner" | "admin";
 }
 
-export async function addMember({ organizationId, userId, role }: AddMemberProps) {
+interface AddMemberResult {
+  success: boolean;
+}
+
+export async function addMember(
+  _prevState: AddMemberResult | null,
+  { organizationId, userId, role }: AddMemberProps
+): Promise<AddMemberResult> {
   try {
     await auth.api.addMember({
       body: {
@@ -18,10 +24,9 @@ export async function addMember({ organizationId, userId, role }: AddMemberProps
         role
       }
     })
-
-    toast.success("Membro adicionado com sucesso.")
+    return { success: true }
   } catch (error) {
     console.log(error)
-    toast.error("Ocorreu um erro inesperado ao adicionar membro. Tente novamente.")
+    return { success: false }
   }
 }
