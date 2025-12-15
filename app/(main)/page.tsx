@@ -1,31 +1,31 @@
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
-
-import { auth } from "@/lib/auth";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { CreateOrganizationForm } from "@/components/forms/create-organization-form";
 import { Button } from "@/components/ui/button";
-export default async function Page() {
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Copy } from "lucide-react";
+import Link from "next/link";
+
+export default  function Page() {
   return (
     <>
-     {/* TODO: Deixar isso aqui completinho com a criação de organização mais bonita */}
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button>Criar organização</Button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Criar organização</DialogTitle>
-            <CreateOrganizationForm />
-          </DialogHeader>
-        </DialogContent>
-      </Dialog>
+     <Card className="w-sm">
+      <CardHeader>
+        <CardTitle className="text-2xl">
+          Inventário de TI
+        </CardTitle>
+        <CardDescription>
+          Vê o dashboard do inventário de TI
+        </CardDescription>
+      </CardHeader>
+      <CardFooter className="gap-2">
+        <Button asChild>
+          <Link href="/inventory">
+            Abrir
+          </Link>
+        </Button>
+        <Button>
+          <Copy/> Copiar link
+        </Button>
+      </CardFooter>
+     </Card>
     </>
   );
 }

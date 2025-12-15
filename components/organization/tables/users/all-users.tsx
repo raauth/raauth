@@ -1,11 +1,19 @@
 "use client"
 
+import { useMemo } from "react";
 import { type User } from "@/prisma/client/client";
 import { Card } from "@/components/ui/card";
 import { DataTable } from "@/components/organization/tables/users/data-table";
-import { usersColumns } from "./users-columns";
+import { getUsersColumns } from "./users-columns";
+import { authClient } from "@/lib/auth-client";
 
 export function AllUsers({ users }: { users: User[] }) {
+  const { data: organization } = authClient.useActiveOrganization();
+
+  const columns = useMemo(() => {
+    return getUsersColumns(organization?.id || "");
+  }, [organization?.id]);
+
   // O componente AllUsers agora é responsável apenas por 
   // fornecer os dados e as colunas para o DataTable genérico.
   return (
@@ -16,7 +24,7 @@ export function AllUsers({ users }: { users: User[] }) {
       </div>
       <Card className="p-4">
         {/* Renderiza a tabela de dados usando as colunas definidas e lista de usuários */}
-        <DataTable columns={usersColumns} data={users} />
+        <DataTable columns={columns} data={users} />
       </Card>
     </div>
   );
