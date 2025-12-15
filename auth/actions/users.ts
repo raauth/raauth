@@ -1,8 +1,20 @@
 import { db } from "@/lib/db"
 
-export const getAllUsers = async () => {
+export const getAllUsers = async (organizationId: string) => {
   try {
-    const users = await db.user.findMany()
+    const members = await db.member.findMany({
+      where: {
+        organizationId,
+      },
+    })
+    const users = await db.user.findMany({
+      where: {
+        id: {
+          notIn: members.map((member) => member.userId),
+        },
+      },
+    })
+    
     return users
   } catch (error) {
     console.log(error)
