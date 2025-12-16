@@ -70,7 +70,7 @@ function MemberActionsCell({ member, organizationId, user }: { member: MemberWit
 
   async function act() {
     startTransition(() => {
-      action({ organizationId, userId: member.id })
+      action({ organizationId, memberId: member.id })
     })
   };
 
