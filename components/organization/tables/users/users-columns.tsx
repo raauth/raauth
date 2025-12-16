@@ -62,7 +62,7 @@ function UserActionCell({ user, organizationId }: { user: User, organizationId: 
 
   async function act() {
     startTransition(() => {
-      action({ organizationId, userId: user.id, role })
+      action({ organizationId, userId: user.id, role });
     });
   };
 
@@ -78,7 +78,7 @@ function UserActionCell({ user, organizationId }: { user: User, organizationId: 
     if (!isPending && state?.success === false) {
       toast.error("Houve um erro ao adicionar o membro. Tente novamente.");
     }
-  }, [isPending, state]); // Dependências: Roda sempre que isPending ou state mudar
+  }, [isPending, state, router ]); // Dependências: Roda sempre que isPending ou state mudar
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

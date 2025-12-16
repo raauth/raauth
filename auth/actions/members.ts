@@ -1,6 +1,7 @@
 "use server"
 
 import { auth } from "@/lib/auth"
+import { sendWelcomeEmail } from "@/lib/emails/sendWelcomeEmail";
 import { headers } from "next/headers";
 
 // função para adicionar um membro a uma organização
@@ -8,6 +9,10 @@ interface AddMemberProps {
   organizationId: string;
   userId: string;
   role: "member" | "owner" | "admin";
+  user: {
+    name: string;
+    email: string;
+  }
 }
 
 interface AddMemberResult {
@@ -16,7 +21,7 @@ interface AddMemberResult {
 
 export async function addMember(
   _prevState: AddMemberResult | null,
-  { organizationId, userId, role }: AddMemberProps
+  { organizationId, userId, role, user }: AddMemberProps
 ): Promise<AddMemberResult> {
   try {
     await auth.api.addMember({
@@ -26,6 +31,8 @@ export async function addMember(
         role
       }
     })
+
+    await sendWelcomeEmail(user)
     return { success: true }
   } catch (error) {
     console.log(error)
