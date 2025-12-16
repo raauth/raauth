@@ -18,7 +18,8 @@ export function InfosCard({organization}: InfosCardProps){
   return(
     <Card>
       <CardHeader>
-        <CardTitle>{organization.name}</CardTitle>
+        
+        <CardTitle className="text-2xl font-bold">{organization.name}</CardTitle>
         <CardDescription>@{organization.slug}</CardDescription>
       </CardHeader>
       <CardContent>
