@@ -3,12 +3,19 @@
 // componentes:
 import { Card } from "@/components/ui/card";
 import { MembersDataTable } from "@/components/organization/tables/members/data-table";
-import { membersColumns } from "./members-columns";
+import { type MemberWithUser, getMembersColumns } from "./members-columns";
 
 // tipos:
-import { type Member } from "@/prisma/client/client";
+import { useMemo } from "react";
+import { authClient } from "@/lib/auth-client";
 
-export function AllMembers({ members }: { members: Member[] }) {
+export function AllMembers({ members }: { members: MemberWithUser[] }) {
+  const { data: organization } = authClient.useActiveOrganization();
+
+  const columns = useMemo(() => {
+    return getMembersColumns(organization?.id || "");
+  }, [organization?.id]);
+
   // O componente AllUsers agora é responsável apenas por 
   // fornecer os dados e as colunas para o DataTable genérico.
   return (
@@ -19,7 +26,7 @@ export function AllMembers({ members }: { members: Member[] }) {
       </div>
       <Card className="p-4">
         {/* Renderiza a tabela de dados usando as colunas definidas e lista de usuários */}
-        <MembersDataTable columns={membersColumns} data={members} />
+        <MembersDataTable columns={columns} data={members} />
       </Card>
     </div>
   );
