@@ -1,11 +1,12 @@
-"use client"
+"use client";
 
-// libs e funções:
+import { useCallback, useEffect, useRef } from "react";
+
+import { persistActiveOrganization } from "@/lib/account-actions/persist-active-organization";
 import { authClient } from "@/lib/auth-client";
 import { type Organization } from "@/prisma/client/client";
 import { useRouter } from "next/navigation";
 
-// componentes:
 import {
   DropdownMenuItem,
   DropdownMenuLabel,
@@ -16,15 +17,15 @@ import {
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
-} from "@/components/ui/dropdown-menu"
-import { toast } from "sonner"
+} from "@/components/ui/dropdown-menu";
+import { toast } from "sonner";
 
-// icons:
-import { ArrowDownUp, BriefcaseBusiness, Check, PlusCircle } from "lucide-react";
+import { ArrowDownUp, BriefcaseBusiness, PlusCircle } from "lucide-react";
 import { Skeleton } from "../ui/skeleton";
 
 interface OrganizationSwitcherProps {
-  organizations: Organization[]
+  organizations: Organization[];
+  preferredActiveOrganizationId?: string | null;
 }
 
 function SkeletonOrganization() {
@@ -33,27 +34,86 @@ function SkeletonOrganization() {
       <Skeleton className="size-4 rounded-full" />
       <Skeleton className="w-20 h-4" />
     </div>
-  )
+  );
 }
 
-export function OrganizationSwitcher({ organizations }: OrganizationSwitcherProps) {
+export function OrganizationSwitcher({ organizations, preferredActiveOrganizationId }: OrganizationSwitcherProps) {
   const router = useRouter();
   const { data: activeOrganization, isPending } = authClient.useActiveOrganization();
+  const isSwitchingRef = useRef(false);
+  const autoSelectionAttemptedForId = useRef<string | null>(null);
 
-  // Se houver apenas uma organização (ou nenhuma), exibe apenas o item desabilitado
+  const setActiveOrganization = useCallback(
+    async (organizationId: string, { silent = false }: { silent?: boolean } = {}) => {
+      if (!organizationId || isSwitchingRef.current) return;
+
+      isSwitchingRef.current = true;
+
+      const changePromise = (async () => {
+        await authClient.organization.setActive({ organizationId });
+        const persisted = await persistActiveOrganization(organizationId);
+        if (!persisted.ok) {
+          throw new Error(persisted.reason ?? "FAILED_TO_PERSIST_ACTIVE_ORGANIZATION");
+        }
+        router.refresh();
+      })();
+
+      try {
+        if (silent) {
+          await changePromise;
+        } else {
+          await toast.promise(changePromise, {
+            loading: "Alterando organizacao",
+            success: "Organizacao alterada",
+            error: "Houve um erro inesperado ao alterar organizacao",
+          });
+        }
+      } catch (error) {
+        if (silent) {
+          toast.error("Nao foi possivel definir a organizacao ativa");
+        }
+      } finally {
+        isSwitchingRef.current = false;
+      }
+    },
+    [router]
+  );
+
+  useEffect(() => {
+    if (isPending || organizations.length === 0 || isSwitchingRef.current) return;
+
+    const hasValidActiveOrganization = activeOrganization
+      ? organizations.some((organization) => organization.id === activeOrganization.id)
+      : false;
+
+    if (hasValidActiveOrganization) return;
+
+    const preferredOrganization =
+      organizations.length === 1
+        ? organizations[0]
+        : organizations.find((organization) => organization.id === preferredActiveOrganizationId);
+
+    if (!preferredOrganization) return;
+
+    if (autoSelectionAttemptedForId.current === preferredOrganization.id) return;
+    autoSelectionAttemptedForId.current = preferredOrganization.id;
+
+    void setActiveOrganization(preferredOrganization.id, { silent: true });
+  }, [activeOrganization, isPending, organizations, preferredActiveOrganizationId, setActiveOrganization]);
+
   if (organizations.length <= 1) {
     return (
       <DropdownMenuItem disabled>
-        { isPending ? (
+        {isPending ? (
           <SkeletonOrganization />
         ) : (
           <>
             <BriefcaseBusiness />
-            {activeOrganization?.name}
+            {activeOrganization?.name ?? organizations[0]?.name}
           </>
         )}
       </DropdownMenuItem>
-    )
+    );
   }
 
   if (isPending) {
@@ -63,21 +123,11 @@ export function OrganizationSwitcher({ organizations }: OrganizationSwitcherProp
           <SkeletonOrganization />
         </DropdownMenuSubTrigger>
       </DropdownMenuSub>
-    )
+    );
   }
 
-  const handleChangeOrganization = async (organizationId: string) => {
-    toast.promise(
-      authClient.organization.setActive({
-        organizationId,
-      }),
-      {
-        loading: "Alterando organização",
-        success: "Organização alterada",
-        error: "Houve um erro inesperado ao alterar organização",
-      }
-    );
-    router.refresh();
+  const handleChangeOrganization = (organizationId: string) => {
+    void setActiveOrganization(organizationId);
   };
 
   return (
@@ -96,7 +146,7 @@ export function OrganizationSwitcher({ organizations }: OrganizationSwitcherProp
         <DropdownMenuSubContent>
           <DropdownMenuLabel className="flex items-center gap-2 text-muted-foreground">
             <ArrowDownUp className="size-4" />
-            Selecione uma organização
+            Selecione uma organizacao
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuRadioGroup value={activeOrganization?.id} onValueChange={handleChangeOrganization}>
@@ -109,10 +159,10 @@ export function OrganizationSwitcher({ organizations }: OrganizationSwitcherProp
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => router.push("/create-organization")}>
             <PlusCircle className="size-4" />
-            Criar nova organização
+            Criar nova organizacao
           </DropdownMenuItem>
         </DropdownMenuSubContent>
       </DropdownMenuPortal>
     </DropdownMenuSub>
-  )
+  );
 }

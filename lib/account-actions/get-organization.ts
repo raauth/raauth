@@ -8,9 +8,6 @@ export async function getOrganizations() {
     where: {
       userId: currentUser.id,
     },
-    include: {
-      organization: true,
-    },
   });
 
   const organizations = await db.organization.findMany({
@@ -21,5 +18,23 @@ export async function getOrganizations() {
     },
   });
 
-  return organizations;
+  const hasSingleOrganization = organizations.length === 1;
+  const preferredActiveOrganizationId = hasSingleOrganization
+    ? organizations[0].id
+    : currentUser.lastActiveOrganizationId &&
+        organizations.some((organization) => organization.id === currentUser.lastActiveOrganizationId)
+      ? currentUser.lastActiveOrganizationId
+      : null;
+
+  if (currentUser.lastActiveOrganizationId !== preferredActiveOrganizationId) {
+    await db.user.update({
+      where: { id: currentUser.id },
+      data: { lastActiveOrganizationId: preferredActiveOrganizationId },
+    });
+  }
+
+  return {
+    organizations,
+    preferredActiveOrganizationId,
+  };
 }

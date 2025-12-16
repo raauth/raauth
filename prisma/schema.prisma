@@ -22,7 +22,11 @@ model User {
   members     Member[]
   invitations Invitation[]
 
+  lastActiveOrganizationId String?
+  lastActiveOrganization   Organization? @relation("LastActiveOrganization", fields: [lastActiveOrganizationId], references: [id])
+
   @@unique([email])
+  @@index([lastActiveOrganizationId])
   @@map("user")
 }
 
@@ -85,6 +89,7 @@ model Organization {
   metadata    String?
   members     Member[]
   invitations Invitation[]
+  lastActiveUsers User[] @relation("LastActiveOrganization")
 
   @@unique([slug])
   @@map("organization")

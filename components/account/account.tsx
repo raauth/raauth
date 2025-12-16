@@ -17,7 +17,7 @@ export async function Account() {
     headers: await headers(),
   });
 
-  const org = await getOrganizations();
+  const { organizations, preferredActiveOrganizationId } = await getOrganizations();
 
 
   return (
@@ -25,7 +25,11 @@ export async function Account() {
       {!session ? (
         <UnloggedAccount />
       ) : (
-        <LoggedAccount session={session} organizations={org} />
+        <LoggedAccount
+          session={session}
+          organizations={organizations}
+          preferredActiveOrganizationId={preferredActiveOrganizationId}
+        />
       )}
     </DropdownMenu>
   );

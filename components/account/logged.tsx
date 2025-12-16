@@ -39,9 +39,10 @@ interface LoggedAccountProps {
     } | null;
   } | null;
   organizations: Organization[];
+  preferredActiveOrganizationId?: string | null;
 }
 
-export function LoggedAccount({ session, organizations }: LoggedAccountProps) {
+export function LoggedAccount({ session, organizations, preferredActiveOrganizationId }: LoggedAccountProps) {
   const router = useRouter();
 
   return (
@@ -65,7 +66,12 @@ export function LoggedAccount({ session, organizations }: LoggedAccountProps) {
 
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          {organizations.length > 0 && <OrganizationSwitcher organizations={organizations} />}
+          {organizations.length > 0 && (
+            <OrganizationSwitcher
+              organizations={organizations}
+              preferredActiveOrganizationId={preferredActiveOrganizationId}
+            />
+          )}
 
           {session?.user?.role && (
             <DropdownMenuItem>
