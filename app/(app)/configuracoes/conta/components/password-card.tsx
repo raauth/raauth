@@ -23,8 +23,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
-import { authClient } from "@/lib/auth-client";
 import { getErrorMessage } from "@/lib/errors";
+import { changePasswordAction } from "@/server/actions/account";
 
 const passwordSchema = z.object({
   currentPassword: z.string().min(1, "A senha atual é obrigatória"),
@@ -47,16 +47,15 @@ export function PasswordCard() {
   async function onSubmit(values: z.infer<typeof passwordSchema>) {
     setIsPending(true);
 
-    const { error } = await authClient.changePassword({
+    const { error } = await changePasswordAction({
       currentPassword: values.currentPassword,
       newPassword: values.newPassword,
-      revokeOtherSessions: true,
     });
 
     setIsPending(false);
 
     if (error) {
-      toast.error(getErrorMessage(error.code || "UNKNOWN_ERROR"));
+      toast.error(getErrorMessage(error.code));
     } else {
       toast.success("Senha alterada com sucesso!");
       form.reset();
@@ -68,45 +67,43 @@ export function PasswordCard() {
       <CardHeader>
         <CardTitle>Senha</CardTitle>
         <CardDescription>
-          Altere a senha utilizada para acessar a sua conta com segurança. Todas
-          as outras sessões ativas serão desconectadas.
+          Altere sua senha atual.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-4 max-w-md"
-          >
-            <FormField
-              control={form.control}
-              name="currentPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Senha Atual</FormLabel>
-                  <FormControl>
-                    <Input type="password" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="currentPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Senha Atual</FormLabel>
+                    <FormControl>
+                      <Input type="password" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="newPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nova Senha</FormLabel>
-                  <FormControl>
-                    <Input type="password" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="newPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nova Senha</FormLabel>
+                    <FormControl>
+                      <Input type="password" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
-            <div className="pt-2">
+            <div className="pt-1">
               <Button type="submit" disabled={isPending}>
                 {isPending ? <Spinner /> : "Atualizar senha"}
               </Button>
