@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef } from "react";
 
-import { persistActiveOrganization } from "@/lib/account-actions/persist-active-organization";
+import { persistActiveOrganization } from "@/server/actions/organizations";
 import { authClient } from "@/lib/auth-client";
 import { type Organization } from "@/prisma/client/client";
 import { useRouter } from "next/navigation";
@@ -37,14 +37,21 @@ function SkeletonOrganization() {
   );
 }
 
-export function OrganizationSwitcher({ organizations, preferredActiveOrganizationId }: OrganizationSwitcherProps) {
+export function OrganizationSwitcher({
+  organizations,
+  preferredActiveOrganizationId,
+}: OrganizationSwitcherProps) {
   const router = useRouter();
-  const { data: activeOrganization, isPending } = authClient.useActiveOrganization();
+  const { data: activeOrganization, isPending } =
+    authClient.useActiveOrganization();
   const isSwitchingRef = useRef(false);
   const autoSelectionAttemptedForId = useRef<string | null>(null);
 
   const setActiveOrganization = useCallback(
-    async (organizationId: string, { silent = false }: { silent?: boolean } = {}) => {
+    async (
+      organizationId: string,
+      { silent = false }: { silent?: boolean } = {},
+    ) => {
       if (!organizationId || isSwitchingRef.current) return;
 
       isSwitchingRef.current = true;
@@ -53,7 +60,9 @@ export function OrganizationSwitcher({ organizations, preferredActiveOrganizatio
         await authClient.organization.setActive({ organizationId });
         const persisted = await persistActiveOrganization(organizationId);
         if (!persisted.ok) {
-          throw new Error(persisted.reason ?? "FAILED_TO_PERSIST_ACTIVE_ORGANIZATION");
+          throw new Error(
+            persisted.reason ?? "FAILED_TO_PERSIST_ACTIVE_ORGANIZATION",
+          );
         }
         router.refresh();
       })();
@@ -76,14 +85,17 @@ export function OrganizationSwitcher({ organizations, preferredActiveOrganizatio
         isSwitchingRef.current = false;
       }
     },
-    [router]
+    [router],
   );
 
   useEffect(() => {
-    if (isPending || organizations.length === 0 || isSwitchingRef.current) return;
+    if (isPending || organizations.length === 0 || isSwitchingRef.current)
+      return;
 
     const hasValidActiveOrganization = activeOrganization
-      ? organizations.some((organization) => organization.id === activeOrganization.id)
+      ? organizations.some(
+          (organization) => organization.id === activeOrganization.id,
+        )
       : false;
 
     if (hasValidActiveOrganization) return;
@@ -91,15 +103,24 @@ export function OrganizationSwitcher({ organizations, preferredActiveOrganizatio
     const preferredOrganization =
       organizations.length === 1
         ? organizations[0]
-        : organizations.find((organization) => organization.id === preferredActiveOrganizationId);
+        : organizations.find(
+            (organization) => organization.id === preferredActiveOrganizationId,
+          );
 
     if (!preferredOrganization) return;
 
-    if (autoSelectionAttemptedForId.current === preferredOrganization.id) return;
+    if (autoSelectionAttemptedForId.current === preferredOrganization.id)
+      return;
     autoSelectionAttemptedForId.current = preferredOrganization.id;
 
     void setActiveOrganization(preferredOrganization.id, { silent: true });
-  }, [activeOrganization, isPending, organizations, preferredActiveOrganizationId, setActiveOrganization]);
+  }, [
+    activeOrganization,
+    isPending,
+    organizations,
+    preferredActiveOrganizationId,
+    setActiveOrganization,
+  ]);
 
   if (organizations.length <= 1) {
     return (
@@ -149,9 +170,15 @@ export function OrganizationSwitcher({ organizations, preferredActiveOrganizatio
             Selecione uma organizacao
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuRadioGroup value={activeOrganization?.id} onValueChange={handleChangeOrganization}>
+          <DropdownMenuRadioGroup
+            value={activeOrganization?.id}
+            onValueChange={handleChangeOrganization}
+          >
             {organizations.map((organization) => (
-              <DropdownMenuRadioItem key={organization.id} value={organization.id}>
+              <DropdownMenuRadioItem
+                key={organization.id}
+                value={organization.id}
+              >
                 {organization.name}
               </DropdownMenuRadioItem>
             ))}

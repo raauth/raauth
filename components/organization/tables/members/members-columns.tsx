@@ -1,18 +1,26 @@
-"use client"
+"use client";
 
 // bibliotecas, libs e funções:
 import { startTransition, useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ColumnDef } from "@tanstack/react-table";
-import { removeMember } from "@/auth/actions/members";
+import { removeMember } from "@/server/actions/members";
 
 // tipos:
 import { type User, type Member } from "@/prisma/client/client";
 
 // componentes:
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Spinner } from "@/components/ui/spinner"
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 
 // ícones:
@@ -21,7 +29,9 @@ import { ArrowUpDown } from "lucide-react";
 // Definição das colunas da tabela de Usuários
 export type MemberWithUser = Member & { user: User };
 
-export const getMembersColumns = (organizationId: string): ColumnDef<MemberWithUser>[] => [
+export const getMembersColumns = (
+  organizationId: string,
+): ColumnDef<MemberWithUser>[] => [
   {
     accessorKey: "user.email",
     id: "E-mail",
@@ -38,7 +48,7 @@ export const getMembersColumns = (organizationId: string): ColumnDef<MemberWithU
             <ArrowUpDown className="size-3.5" />
           </Button>
         </div>
-      )
+      );
     },
   },
   {
@@ -57,22 +67,34 @@ export const getMembersColumns = (organizationId: string): ColumnDef<MemberWithU
     cell: ({ row }) => {
       // Célula de ações customizada
       return (
-        <MemberActionsCell member={row.original} organizationId={organizationId} user={row.original.user} />
-      )
+        <MemberActionsCell
+          member={row.original}
+          organizationId={organizationId}
+          user={row.original.user}
+        />
+      );
     },
   },
-]
+];
 
-function MemberActionsCell({ member, organizationId, user }: { member: MemberWithUser, organizationId: string, user: User }) {
+function MemberActionsCell({
+  member,
+  organizationId,
+  user,
+}: {
+  member: MemberWithUser;
+  organizationId: string;
+  user: User;
+}) {
   const [state, action, isPending] = useActionState(removeMember, null);
   const router = useRouter();
   const [open, setOpen] = useState(false);
 
   async function act() {
     startTransition(() => {
-      action({ organizationId, memberId: member.id })
-    })
-  };
+      action({ organizationId, memberId: member.id });
+    });
+  }
 
   // 2. O useEffect para monitorar a conclusão
   useEffect(() => {
@@ -98,17 +120,13 @@ function MemberActionsCell({ member, organizationId, user }: { member: MemberWit
           <DialogTitle>Remover membro</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col gap-4 py-4">
-          <p>
-            Você está prestes a remover
-          </p>
+          <p>Você está prestes a remover</p>
 
           <div className="grid grid-cols-2">
             <div>
               <p className="font-bold text-xl">{user.name}</p>
               <p className="text-muted-foreground">{user.email}</p>
             </div>
-
-
           </div>
 
           <p>Desta organização</p>
@@ -125,5 +143,5 @@ function MemberActionsCell({ member, organizationId, user }: { member: MemberWit
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
-};
+  );
+}
