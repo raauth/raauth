@@ -29,7 +29,8 @@ import { betterAuth } from "better-auth";
 
 // Plugin de organização: adiciona suporte multi-tenant com
 // roles (owner, admin, member), convites, times, etc.
-import { organization } from "better-auth/plugins";
+import { organization, twoFactor, username } from "better-auth/plugins";
+import { passkey } from "@better-auth/passkey";
 
 // Nossas definições de permissões e roles customizadas.
 // O "ac" é o Access Control (controle de acesso), e owner/admin/member
@@ -42,6 +43,9 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 
 // Nossa instância do banco de dados (ver lib/db.ts)
 import { db } from "@/lib/db";
+
+// Nossa função de envio de e-mail de autenticação
+import { sendResetPasswordEmail } from "@/server/mail/auth";
 
 // Plugin nextCookies: integra os cookies do Better Auth
 // com o sistema de cookies do Next.js (necessário para que
@@ -68,6 +72,19 @@ export const auth = betterAuth({
   database: prismaAdapter(db, {
     provider: "postgresql",
   }),
+
+  // ── Email & Password ────────────────────────────────────
+  // Habilita e-mail/senha e ações como reset de senha.
+  emailAndPassword: {
+    enabled: true,
+    requireEmailVerification: false,
+    sendResetPassword: async ({ user, url }) => {
+      await sendResetPasswordEmail({
+        user: { name: user.name, email: user.email },
+        url
+      });
+    },
+  },
 
   // ── Provedores OAuth (Login Social) ─────────────────────
   // Cada provedor permite login com uma conta externa.
@@ -125,5 +142,18 @@ export const auth = betterAuth({
     // Sem ele, os Server Components não conseguem ler a
     // sessão do usuário nos cookies da requisição.
     nextCookies(),
+
+    // ================== NOVOS PLUGINS ================== //
+    // 1. Two-Factor Authentication (MFA)
+    // Permite uso restrito a TOTP (Authenticator app) e Códigos de Backup
+    twoFactor(),
+
+    // 2. Passkeys (WebAuthn)
+    // Suporte nativo para autenticação biométrica / chaves de hardware
+    passkey(),
+
+    // 3. Username
+    // Permite login e registro usando 'username' além de 'email'
+    username(),
   ],
 });

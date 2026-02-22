@@ -1,8 +1,6 @@
 "use client";
 
-import React, {
-  useState
-} from "react";
+import React, { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -22,12 +20,7 @@ import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 
 // ícones:
-import {
-  Check,
-  EyeIcon,
-  EyeClosedIcon,
-  X,
-} from "lucide-react";
+import { Check, EyeIcon, EyeClosedIcon, X } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/errors";
@@ -36,12 +29,16 @@ import { getErrorMessage } from "@/lib/errors";
 const registerInfos = z.object({
   name: z.string().min(1, { message: "Como devemos te chamar?" }),
   lastname: z.string().min(1, { message: "Seu sobrenome é?" }),
+  username: z
+    .string()
+    .min(3, { message: "O nome de usuário deve ter pelo menos 3 caracteres" })
+    .regex(/^[a-zA-Z0-9_]+$/, "Apenas letras, números e underlines"),
   email: z
     .email({ message: "O e-mail digitado não é válido" })
     .min(5, { message: "Precisamos de um e-mail para entrar em contato" }),
   password: z
     .string()
-    .min(1, { message: "Sua senha precisa ter ao menos 10 caracteres" }),
+    .min(10, { message: "Sua senha precisa ter ao menos 10 caracteres" }),
 });
 
 export function RegisterForm() {
@@ -54,21 +51,22 @@ export function RegisterForm() {
   const buttonColorClass = showCheck
     ? "bg-green-500"
     : showErrorFlash
-    ? "bg-red-500 hover:bg-red-600"
-    : null;
+      ? "bg-red-500 hover:bg-red-600"
+      : null;
 
   const form = useForm<z.infer<typeof registerInfos>>({
     resolver: zodResolver(registerInfos),
     defaultValues: {
       name: "",
       lastname: "",
+      username: "",
       email: "",
       password: "",
     },
   });
 
-  const pass = useWatch({ control: form.control, name: "password" })
-  const [ showPass, setShowPass ] = useState<boolean>(false);
+  const pass = useWatch({ control: form.control, name: "password" });
+  const [showPass, setShowPass] = useState<boolean>(false);
   const disableShowPassButton = pass === "" || pass === undefined;
 
   async function onSubmit(values: z.infer<typeof registerInfos>) {
@@ -81,30 +79,31 @@ export function RegisterForm() {
         email: values.email,
         password: values.password,
         name: values.name + " " + values.lastname,
+        username: values.username,
         callbackURL: "",
       },
       {
         onRequest: () => {
           setIsPending(true);
         },
-        onSuccess: (ctx) => {
+        onSuccess: (ctx: any) => {
           setIsPending(false);
           setShowCheck(true);
 
-          sessionStorage.setItem('registerSuccess', 'true');
-          sessionStorage.setItem('registeredEmail', ctx.data.user.email);
+          sessionStorage.setItem("registerSuccess", "true");
+          sessionStorage.setItem("registeredEmail", ctx.data.user.email);
 
           setTimeout(() => {
             router.push("/criar-conta/confirmar");
           }, 1000);
         },
-        onError: (ctx) => {
+        onError: (ctx: any) => {
           setIsPending(false);
           setShowErrorFlash(true);
           setTimeout(() => setShowErrorFlash(false), 2000);
-          toast.error(getErrorMessage(ctx.error.code))
+          toast.error(getErrorMessage(ctx.error.code));
         },
-      }
+      },
     );
   }
 
@@ -144,6 +143,24 @@ export function RegisterForm() {
               )}
             />
           </div>
+
+          <FormField
+            control={form.control}
+            name="username"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nome de usuário</FormLabel>
+                <FormControl>
+                  <Input
+                    autoComplete="username"
+                    placeholder="seunome"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           <FormField
             control={form.control}

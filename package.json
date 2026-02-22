@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "prisma generate && next dev",
     "dev:e": "email dev",
     "build": "prisma generate && next build",
     "start": "next start",
@@ -13,13 +13,14 @@
     "db:studio": "prisma studio"
   },
   "dependencies": {
+    "@better-auth/passkey": "^1.4.18",
     "@hookform/resolvers": "^5.2.2",
     "@icons-pack/react-simple-icons": "^13.8.0",
     "@prisma/adapter-pg": "^7.1.0",
     "@prisma/client": "7.1.0",
     "@react-email/components": "1.0.1",
     "@tanstack/react-table": "^8.21.3",
-    "better-auth": "^1.4.5",
+    "better-auth": "^1.4.18",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dotenv": "^17.2.3",
@@ -28,6 +29,7 @@
     "next-themes": "^0.4.6",
     "pg": "^8.16.3",
     "prettier": "^3.7.4",
+    "qrcode.react": "^4.2.0",
     "radix-ui": "^1.4.3",
     "react": "19.2.1",
     "react-dom": "19.2.1",
@@ -39,6 +41,7 @@
     "zod": "^4.1.13"
   },
   "devDependencies": {
+    "@react-email/preview-server": "5.0.8",
     "@tailwindcss/postcss": "^4.1.17",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.7",

@@ -58,6 +58,13 @@ model User {
   // Relações com organizações: membros e convites
   members     Member[]
   invitations Invitation[]
+  twoFactors  TwoFactor[]
+  passkeys    Passkey[]
+
+  // Novos campos adicionados pelos plugins do Better Auth
+  username         String? @unique
+  displayUsername  String?
+  twoFactorEnabled Boolean @default(false)
 
   // Última organização ativa (para restaurar ao fazer login)
   lastActiveOrganizationId String?
@@ -248,4 +255,44 @@ model Invitation {
   @@index([organizationId])
   @@index([email])
   @@map("invitation")
+}
+
+// ============================================================
+// 🔐 AUTENTICAÇÃO EM DUAS ETAPAS (TwoFactor)
+// ============================================================
+// Adicionado pelo plugin twoFactor. Armazena os segredos
+// TOTP e os códigos de recuperação (backupCodes).
+// ============================================================
+model TwoFactor {
+  id          String @id
+  secret      String
+  backupCodes String
+  userId      String
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("twoFactor")
+}
+
+// ============================================================
+// 🔑 PASSKEYS (Passkey)
+// ============================================================
+// Adicionado pelo plugin passkey. Armazena credenciais
+// biométricas ou hardware keys baseadas em WebAuthn.
+// ============================================================
+model Passkey {
+  id             String    @id
+  name           String?
+  publicKey      String
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  webauthnUserID String
+  counter        Int
+  deviceType     String
+  backedUp       Boolean
+  transports     String?
+  createdAt      DateTime? @default(now())
+
+  @@index([userId])
+  @@map("passkey")
 }

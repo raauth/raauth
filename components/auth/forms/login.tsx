@@ -3,7 +3,7 @@
 // dependências:
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from 'next/navigation'
+import { useRouter } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,8 +19,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Spinner } from "@/components/ui/spinner"
-import { toast } from "sonner"
+import { Spinner } from "@/components/ui/spinner";
+import { toast } from "sonner";
 
 // ícones:
 import { EyeIcon, EyeClosedIcon } from "lucide-react";
@@ -31,15 +31,15 @@ import { getErrorMessage } from "@/lib/errors";
 // TODO: melhorar a validação para não aceitar e-mails vazios
 const loginInfos = z.object({
   email: z
-    .email({ message: "O e-mail digitado não é válido" })
+    .string()
     .min(1, { message: "Precisamos de um e-mail ou nome de usuário" })
     .trim(),
   password: z.string().min(1, { message: "Precisamos de uma senha" }).trim(),
 });
 
 export function LoginForm() {
-  const router = useRouter()
-  
+  const router = useRouter();
+
   const [isPending, setIsPending] = useState(false);
 
   const form = useForm<z.infer<typeof loginInfos>>({
@@ -54,6 +54,28 @@ export function LoginForm() {
   const [showPass, setShowPass] = useState<boolean>(false);
   const disableShowPassButton = pass === "" || pass === undefined;
 
+  // Estados para 2FA
+  const [showOtpInput, setShowOtpInput] = useState(false);
+  const [otpCode, setOtpCode] = useState("");
+
+  async function handleVerifyOTP() {
+    setIsPending(true);
+    const { error } = await (authClient as any).twoFactor.verifyTotp({
+      code: otpCode,
+    });
+
+    setIsPending(false);
+
+    if (error) {
+      toast.error(
+        getErrorMessage((error as any).code || "") || "Código inválido",
+      );
+    } else {
+      toast.success("Login efetuado com sucesso!");
+      router.push("/");
+    }
+  }
+
   async function onSubmit(values: z.infer<typeof loginInfos>) {
     setIsPending(true);
 
@@ -66,17 +88,23 @@ export function LoginForm() {
         onRequest: () => {
           setIsPending(true);
         },
-        onSuccess: (ctx) => {
+        onSuccess: (ctx: any) => {
           setIsPending(false);
-          toast.success(`Bem-vindo(a), ${ctx.data.user.name}!`)
+          if (ctx.data?.twoFactorRedirect) {
+            setShowOtpInput(true);
+            toast.info("Autenticação de duas etapas necessária.");
+            return;
+          }
+
+          toast.success(`Bem-vindo(a), ${ctx.data.user.name}!`);
           router.push("/");
         },
-        onError: (ctx) => {
+        onError: (ctx: any) => {
           setIsPending(false);
-          toast.error(getErrorMessage(ctx.error.code))
-          form.setValue("password", "")
+          toast.error(getErrorMessage(ctx.error.code));
+          form.setValue("password", "");
         },
-      }
+      },
     );
   }
 
@@ -91,10 +119,10 @@ export function LoginForm() {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>E-mail</FormLabel>
+              <FormLabel>E-mail ou Nome de Usuário</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="você@alguma-coisa.com"
+                  placeholder="você@alguma-coisa.com ou seunome"
                   autoComplete="email username webauthn"
                   {...field}
                 />
@@ -152,16 +180,38 @@ export function LoginForm() {
         />
 
         <div className="flex flex-col gap-2">
-          <Button
-            type="submit"
-            disabled={isPending}
-          >
-            {isPending ? (
-              <Spinner />
-            ) : (
-              "Entrar"
-            )}
-          </Button>
+          {showOtpInput ? (
+            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <div className="space-y-2">
+                <FormLabel>Código de Autenticação (2FA)</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="000111"
+                    value={otpCode}
+                    onChange={(e) => setOtpCode(e.target.value)}
+                    maxLength={6}
+                    autoComplete="one-time-code"
+                  />
+                </FormControl>
+                <p className="text-xs text-muted-foreground">
+                  Abra o aplicativo autenticador no seu celular para ver o
+                  código.
+                </p>
+              </div>
+              <Button
+                type="button"
+                className="w-full"
+                disabled={isPending || otpCode.length < 6}
+                onClick={handleVerifyOTP}
+              >
+                {isPending ? <Spinner /> : "Verificar e Entrar"}
+              </Button>
+            </div>
+          ) : (
+            <Button type="submit" disabled={isPending}>
+              {isPending ? <Spinner /> : "Entrar"}
+            </Button>
+          )}
         </div>
       </form>
     </Form>

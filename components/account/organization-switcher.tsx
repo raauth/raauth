@@ -184,7 +184,7 @@ export function OrganizationSwitcher({
             ))}
           </DropdownMenuRadioGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => router.push("/create-organization")}>
+          <DropdownMenuItem onClick={() => router.push("/criar-organizacao")}>
             <PlusCircle className="size-4" />
             Criar nova organizacao
           </DropdownMenuItem>

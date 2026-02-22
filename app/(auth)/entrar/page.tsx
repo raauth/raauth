@@ -16,46 +16,53 @@
 // - CardFooter: rodapé com link para registro
 // ============================================================
 
-// Componentes do card de autenticação
 import { CardContent } from "@/app/(auth)/components/card-content";
 import { RaauthCardHeader } from "@/app/(auth)/components/raauth-card-header";
 import { CardFooter } from "@/app/(auth)/components/card-footer";
 
-// Botões de login social (OAuth)
 import {
   GithubOauthButton,
   GoogleOauthButton,
   MicrosoftOauthButton,
 } from "@/components/auth/buttons/oauth-buttons";
-
-// Formulário de login por e-mail/senha
 import { LoginForm } from "@/components/auth/forms/login";
-
-// Separador visual "ou" entre OAuth e e-mail
+import { PasskeyLoginButton } from "@/components/auth/buttons/passkey-button";
 import { Or } from "@/components/auth/or";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function LoginPage() {
   return (
     <>
-      {/* Cabeçalho: logo + "Entrar na sua conta" */}
       <RaauthCardHeader login />
 
       <CardContent>
-        {/* Seção 1: botões de login social lado a lado */}
-        <div className="grid grid-cols-3 space-x-2">
-          <MicrosoftOauthButton />
-          <GoogleOauthButton />
-          <GithubOauthButton />
-        </div>
+        <Tabs defaultValue="credentials" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-4">
+            <TabsTrigger value="credentials">Senha</TabsTrigger>
+            <TabsTrigger value="passkey">Passkey</TabsTrigger>
+          </TabsList>
 
-        {/* Separador visual com texto "ou" */}
-        <Or />
+          <TabsContent
+            value="credentials"
+            className="space-y-4 focus-visible:outline-none"
+          >
+            <div className="grid grid-cols-3 space-x-2">
+              <MicrosoftOauthButton />
+              <GoogleOauthButton />
+              <GithubOauthButton />
+            </div>
 
-        {/* Seção 2: formulário de e-mail e senha */}
-        <LoginForm />
+            <Or />
+
+            <LoginForm />
+          </TabsContent>
+
+          <TabsContent value="passkey" className="focus-visible:outline-none">
+            <PasskeyLoginButton />
+          </TabsContent>
+        </Tabs>
       </CardContent>
 
-      {/* Rodapé: "Não tem conta? Criar uma" */}
       <CardFooter login />
     </>
   );
