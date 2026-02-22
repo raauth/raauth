@@ -1,138 +1,179 @@
-# RAAuth - Portal de Dashboards Power BI
+# Raauth - Base Reutilizável de Autenticação
 
-Uma implementação open source para hospedar e gerenciar dashboards Power BI da empresa **Amper Elinsa**. Este projeto fornece uma solução completa de autenticação, autorização e gerenciamento de acesso a relatórios e painéis de Business Intelligence.
+Uma base open source de autenticação com suporte a organizações multi-tenant, pronta para ser forkada e adaptada para qualquer projeto. Construída com **Better Auth**, **Next.js 16** e **Prisma**.
+
+## 🎯 O que é isso?
+
+Este projeto é um **template de autenticação** completo que você pode usar como ponto de partida para qualquer aplicação web. Em vez de configurar autenticação do zero toda vez, faça um fork deste repositório e adapte para o seu caso de uso.
+
+### O que já vem pronto:
+
+- 🔐 **Login por e-mail/senha** com validação
+- 🌐 **Login social** (Microsoft, Google, GitHub) via OAuth
+- 🏢 **Sistema de organizações** multi-tenant com roles
+- 👥 **Gerenciamento de membros** (adicionar, remover, roles)
+- 📨 **E-mails transacionais** (boas-vindas, remoção)
+- 🎨 **UI completa** com shadcn/ui, tema claro/escuro
+- 📝 **Comentários didáticos** em todo o código
 
 ## 🚀 Tecnologias
 
-Este projeto foi construído utilizando as seguintes tecnologias:
-
 ### Core
 
-- **[Next.js 16](https://nextjs.org)** - Framework React para produção
-- **[React 19](https://react.dev)** - Biblioteca para interfaces de usuário
-- **[TypeScript](https://www.typescriptlang.org)** - Superset tipado de JavaScript
-
-### Banco de Dados & ORM
-
-- **[Prisma](https://www.prisma.io)** - ORM moderno para Node.js e TypeScript
-- **[PostgreSQL](https://postgresql.org)** - Banco de dados relacional
+- **[Next.js 16](https://nextjs.org)** - Framework React full-stack
+- **[React 19](https://react.dev)** - Biblioteca para interfaces
+- **[TypeScript](https://www.typescriptlang.org)** - JavaScript tipado
 
 ### Autenticação & Autorização
 
-- **[Better Auth](https://www.better-auth.com)** - Solução de autenticação moderna e segura
+- **[Better Auth](https://www.better-auth.com)** - Framework de autenticação moderno
+
+### Banco de Dados & ORM
+
+- **[PostgreSQL](https://postgresql.org)** - Banco relacional
+- **[Prisma](https://www.prisma.io)** - ORM com type-safety
 
 ### UI & Estilização
 
-- **[Tailwind CSS 4](https://tailwindcss.com)** - Framework CSS utility-first
-- **[Radix UI](https://www.radix-ui.com)** - Componentes primitivos acessíveis
+- **[Tailwind CSS 4](https://tailwindcss.com)** - Utility-first CSS
+- **[Radix UI](https://www.radix-ui.com)** - Componentes acessíveis
 - **[Lucide React](https://lucide.dev)** - Ícones modernos
-- **[Sonner](https://sonner.emilkowal.ski)** - Notificações toast elegantes
+- **[Sonner](https://sonner.emilkowal.ski)** - Notificações toast
 
 ### Formulários & Validação
 
 - **[React Hook Form](https://react-hook-form.com)** - Formulários performáticos
-- **[Zod](https://zod.dev)** - Validação de schemas TypeScript-first
-
-### Tabelas & Dados
-
-- **[TanStack Table](https://tanstack.com/table)** - Tabelas headless e poderosas
+- **[Zod](https://zod.dev)** - Validação de schemas
 
 ### E-mail
 
-- **[React Email](https://react.email)** - Componentes de e-mail com React
-- **[Resend](https://resend.com)** - Serviço de envio de e-mails
+- **[React Email](https://react.email)** - Templates de e-mail
+- **[Resend](https://resend.com)** - Envio de e-mails
 
-## ✨ Funcionalidades
+## 📁 Estrutura do Projeto
 
-- 🔐 **Autenticação segura** com múltiplos providers
-- 👥 **Gerenciamento de organizações** com múltiplos usuários
-- 📊 **Integração com Power BI** via iframe embedding
-- 🎯 **Controle de acesso por roles** (Admin, Membro, Convidado)
-- 📱 **Interface responsiva** e moderna
-- 🌙 **Tema claro/escuro** com next-themes
+```
+raauth/
+├── app/                        # App Router do Next.js
+│   ├── (auth)/                 # Rotas de autenticação (login, registro)
+│   │   ├── entrar/             # Página de login
+│   │   └── criar-conta/        # Página de registro
+│   ├── (app)/                  # Rotas protegidas da aplicação
+│   │   ├── page.tsx            # Home (customize para seu projeto)
+│   │   └── org/[slug]/         # Página de detalhes da organização
+│   └── api/auth/[...all]/      # API catch-all do Better Auth
+├── server/                     # Lógica server-side
+│   ├── actions/                # Server Actions (sessão, membros, etc.)
+│   ├── mail/                   # Funções de envio de e-mail
+│   └── permissions.ts          # Definição de roles e permissões
+├── components/                 # Componentes React
+│   ├── auth/                   # Formulários e botões de auth
+│   ├── account/                # Menu de conta/perfil
+│   ├── organization/           # Gestão de organizações
+│   ├── structure/              # Header, logo, layout
+│   └── ui/                     # shadcn/ui (primitivos)
+├── lib/                        # Configurações e utilitários
+│   ├── auth.ts                 # Config do Better Auth (server)
+│   ├── auth-client.ts          # Config do Better Auth (client)
+│   ├── db.ts                   # Instância do Prisma
+│   ├── errors.ts               # Mapeamento de erros i18n
+│   └── utils.ts                # Utilitários (cn)
+└── prisma/
+    └── schema.prisma           # Schema do banco de dados
+```
 
-## 🛠️ Começando
+## 🛠️ Como usar
 
 ### Pré-requisitos
 
 - Node.js 18+
 - PostgreSQL
-- npm, yarn, pnpm ou bun
+- pnpm (recomendado)
 
 ### Instalação
 
-1. Clone o repositório:
+1. Fork e clone o repositório:
 
 ```bash
-git clone https://github.com/amper-elinsa/raauth.git
-cd raauth
+git clone https://github.com/seu-usuario/seu-fork.git
+cd seu-fork
 ```
 
 2. Instale as dependências:
 
 ```bash
-npm install
-# ou
-yarn install
-# ou
 pnpm install
 ```
 
 3. Configure as variáveis de ambiente:
 
 ```bash
-cp .env.example .env
+cp .example.env .env
+# Edite o .env com suas credenciais
 ```
 
-4. Execute as migrações do banco de dados:
+4. Gere o client Prisma e execute as migrações:
 
 ```bash
-npm run db:migrate
+pnpm run db:client
+pnpm run db:migrate
 ```
 
 5. Inicie o servidor de desenvolvimento:
 
 ```bash
-npm run dev
+pnpm run dev
 ```
 
-Abra [http://localhost:3000](http://localhost:3000) no seu navegador.
+Abra [http://localhost:3000](http://localhost:3000) no navegador.
+
+## 🔀 Como fazer fork e adaptar
+
+### 1. Personalize o auth (`lib/auth.ts`)
+
+- Remova ou adicione provedores OAuth
+- Configure plugins adicionais (twoFactor, passkey, etc.)
+- Ajuste o basePath se necessário
+
+### 2. Adapte o schema (`prisma/schema.prisma`)
+
+- Adicione seus models de domínio
+- Crie relações com Organization (multi-tenant)
+- Rode `pnpm run db:migrate` após alterações
+
+### 3. Customize a home (`app/(app)/page.tsx`)
+
+- Substitua pelo conteúdo do seu aplicativo
+- Adicione rotas em `app/(app)/`
+
+### 4. Ajuste o visual
+
+- Edite as cores em `app/globals.css`
+- Troque o logo em `components/structure/logo.tsx`
+- Modifique o metadata em `app/layout.tsx`
+
+### 5. Configure os e-mails
+
+- Atualize o domínio de envio em `server/mail/membership.ts`
+- Crie templates React Email em uma pasta `emails/`
 
 ## 📦 Scripts Disponíveis
 
 | Script               | Descrição                            |
 | -------------------- | ------------------------------------ |
-| `npm run dev`        | Inicia o servidor de desenvolvimento |
-| `npm run build`      | Gera o build de produção             |
-| `npm run start`      | Inicia o servidor de produção        |
-| `npm run lint`       | Executa o linter                     |
-| `npm run db:client`  | Gera o client do Prisma              |
-| `npm run db:migrate` | Executa as migrações do banco        |
-| `npm run db:studio`  | Abre o Prisma Studio                 |
-| `npm run dev:e`      | Inicia o preview de e-mails          |
-
-## 📁 Estrutura do Projeto
-
-```
-raauth/
-├── app/                    # App Router do Next.js
-│   ├── (main)/            # Rotas principais (com layout)
-│   ├── (dashboards)/      # Rotas de dashboards Power BI
-│   └── api/               # API Routes
-├── components/            # Componentes React reutilizáveis
-├── lib/                   # Utilitários e configurações
-├── prisma/                # Schema e migrações do banco
-└── emails/                # Templates de e-mail
-```
-
-## 🤝 Contribuindo
-
-Contribuições são bem-vindas! Sinta-se à vontade para abrir issues e pull requests.
+| `pnpm run dev`       | Servidor de desenvolvimento          |
+| `pnpm run build`     | Build de produção                    |
+| `pnpm run start`     | Servidor de produção                 |
+| `pnpm run lint`      | Linter                               |
+| `pnpm run db:client` | Gera o client do Prisma              |
+| `pnpm run db:migrate`| Executa migrações do banco           |
+| `pnpm run db:studio` | Abre o Prisma Studio                 |
+| `pnpm run dev:e`     | Preview de e-mails (React Email)     |
 
 ## 📄 Licença
 
-Este projeto é open source e está disponível sob a licença MIT.
+MIT
 
 ---
 
-Desenvolvido com ❤️ pela equipe **Amper Elinsa**
+Desenvolvido com ❤️ por **Raave Aires**
