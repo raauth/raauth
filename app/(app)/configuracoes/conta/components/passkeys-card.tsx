@@ -164,7 +164,7 @@ export function PasskeysCard() {
   }
 
   return (
-    <Card>
+    <Card id="passkeys-card">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Fingerprint className="h-5 w-5" />

@@ -185,7 +185,7 @@ export function MfaCard({
             <div className="rounded-md border border-amber-300/60 bg-amber-50/80 p-4 text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200">
               <p className="flex items-center gap-2 font-medium">
                 <TriangleAlert className="size-4" />
-                2FA do Better Auth exige senha local
+                2FA por autenticador exige senha local
               </p>
               <p className="mt-2 text-sm">
                 Contas somente sociais ainda não ativam o TOTP nativo sem
@@ -200,11 +200,18 @@ export function MfaCard({
                   ? "Você já possui passkeys cadastrados. Isso ajuda a proteger o acesso sem senha."
                   : "Você pode reforçar a proteção sem senha cadastrando passkeys."}
               </p>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-col items-center gap-2">
                 <Button asChild variant="outline">
                   <a href="#password-card">Definir senha para ativar TOTP</a>
                 </Button>
-                {!hasPasskeys && <span className="text-muted-foreground">ou use Passkeys</span>}
+                {!hasPasskeys && (
+                  <a
+                    href="#passkeys-card"
+                    className="text-muted-foreground underline underline-offset-2 hover:text-foreground"
+                  >
+                    ou use Passkeys
+                  </a>
+                )}
               </div>
             </div>
           </div>

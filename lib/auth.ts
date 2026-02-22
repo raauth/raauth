@@ -116,6 +116,12 @@ export const auth = betterAuth({
       updateEmailWithoutVerification: false,
     },
   },
+  account: {
+    accountLinking: {
+      enabled: true,
+      trustedProviders: ["google", "github", "microsoft"],
+    },
+  },
 
   // ── Provedores OAuth (Login Social) ─────────────────────
   // Cada provedor permite login com uma conta externa.
