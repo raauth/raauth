@@ -58,6 +58,34 @@ function readPathString(
   return current;
 }
 
+function resolveCallbackURL(callbackURL?: string) {
+  if (!callbackURL) {
+    return undefined;
+  }
+
+  const trimmedURL = callbackURL.trim();
+
+  if (!trimmedURL) {
+    return undefined;
+  }
+
+  if (trimmedURL.startsWith("http://") || trimmedURL.startsWith("https://")) {
+    return trimmedURL;
+  }
+
+  const baseURL = process.env.BETTER_AUTH_URL || process.env.NEXT_PUBLIC_URL;
+
+  if (!baseURL) {
+    return trimmedURL;
+  }
+
+  try {
+    return new URL(trimmedURL, baseURL).toString();
+  } catch {
+    return trimmedURL;
+  }
+}
+
 function mapActionError(error: unknown): ActionError {
   const code =
     readPathString(error, ["body", "code"]) ||
@@ -233,6 +261,40 @@ export async function changePasswordAction(input: {
   }
 }
 
+export async function setPasswordAction(input: {
+  newPassword: string;
+}): Promise<ActionResult<{ status: boolean }>> {
+  try {
+    const data = await auth.api.setPassword({
+      body: {
+        newPassword: input.newPassword,
+      },
+      headers: await headers(),
+    });
+
+    return ok(data);
+  } catch (error) {
+    const mapped = mapActionError(error);
+
+    if (
+      mapped.code === "BAD_REQUEST" &&
+      mapped.message?.toLowerCase().includes("already has a password")
+    ) {
+      return {
+        data: null,
+        error: {
+          code: "PASSWORD_ALREADY_DEFINED",
+        },
+      };
+    }
+
+    return {
+      data: null,
+      error: mapped,
+    };
+  }
+}
+
 export async function changeEmailAction(input: {
   newEmail: string;
   callbackURL?: string;
@@ -241,7 +303,7 @@ export async function changeEmailAction(input: {
     const data = await auth.api.changeEmail({
       body: {
         newEmail: input.newEmail.trim(),
-        callbackURL: input.callbackURL,
+        callbackURL: resolveCallbackURL(input.callbackURL),
       },
       headers: await headers(),
     });

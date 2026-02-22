@@ -79,7 +79,10 @@ export function EmailCard({ user }: { user: EmailCardUser }) {
     <Card>
       <CardHeader>
         <CardTitle>E-mail</CardTitle>
-        <CardDescription>Atualize o e-mail principal da sua conta.</CardDescription>
+        <CardDescription>
+          Atualize o e-mail principal. A troca só é concluída após confirmar o
+          link no novo endereço.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>

@@ -23,9 +23,11 @@ import { authClient } from "@/lib/auth-client";
 
 // Tipo que garante que só usamos códigos de erro que o
 // Better Auth realmente retorna. Previne erros de digitação.
+type CustomErrorCode = "PASSWORD_ALREADY_DEFINED";
+
 type ErrorTypes = Partial<
 	Record<
-		keyof typeof authClient.$ERROR_CODES,
+		keyof typeof authClient.$ERROR_CODES | CustomErrorCode,
 		{
 			pt_br: string;
 		}
@@ -41,11 +43,44 @@ const errorCodes = {
 	INVALID_EMAIL_OR_PASSWORD: {
 		pt_br: "Login ou senha inválidos.",
 	},
+	INVALID_USERNAME_OR_PASSWORD: {
+		pt_br: "Nome de usuário ou senha inválidos.",
+	},
 	EMAIL_NOT_VERIFIED: {
 		pt_br: "Verifique seu e-mail antes de continuar.",
 	},
 	USER_EMAIL_NOT_FOUND: {
 		pt_br: "Nenhum usuário encontrado com esse e-mail.",
+	},
+	USERNAME_IS_ALREADY_TAKEN: {
+		pt_br: "Esse nome de usuário já está em uso.",
+	},
+	USERNAME_TOO_SHORT: {
+		pt_br: "O nome de usuário está curto demais.",
+	},
+	USERNAME_TOO_LONG: {
+		pt_br: "O nome de usuário ultrapassou o limite de caracteres.",
+	},
+	INVALID_USERNAME: {
+		pt_br: "O nome de usuário informado é inválido.",
+	},
+	INVALID_DISPLAY_USERNAME: {
+		pt_br: "O nome de exibição informado é inválido.",
+	},
+	INVALID_PASSWORD: {
+		pt_br: "A senha informada está incorreta.",
+	},
+	PASSWORD_TOO_SHORT: {
+		pt_br: "A senha precisa ter no mínimo 8 caracteres.",
+	},
+	PASSWORD_TOO_LONG: {
+		pt_br: "A senha ultrapassou o limite permitido.",
+	},
+	CREDENTIAL_ACCOUNT_NOT_FOUND: {
+		pt_br: "Esta conta ainda não possui senha definida.",
+	},
+	PASSWORD_ALREADY_DEFINED: {
+		pt_br: "Esta conta já possui senha definida.",
 	},
 } satisfies ErrorTypes;
 
