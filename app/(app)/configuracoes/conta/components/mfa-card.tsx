@@ -200,18 +200,15 @@ export function MfaCard({
                   ? "Você já possui passkeys cadastrados. Isso ajuda a proteger o acesso sem senha."
                   : "Você pode reforçar a proteção sem senha cadastrando passkeys."}
               </p>
-              <div className="flex flex-col items-center gap-2">
-                <Button asChild variant="outline">
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                <Button asChild variant="outline" size="sm">
                   <a href="#password-card">Definir senha para ativar TOTP</a>
                 </Button>
-                {!hasPasskeys && (
-                  <a
-                    href="#passkeys-card"
-                    className="text-muted-foreground underline underline-offset-2 hover:text-foreground"
-                  >
-                    ou use Passkeys
+                <Button asChild variant="secondary" size="sm">
+                  <a href="#passkeys-card">
+                    {hasPasskeys ? "Gerenciar Passkeys" : "Usar Passkeys"}
                   </a>
-                )}
+                </Button>
               </div>
             </div>
           </div>

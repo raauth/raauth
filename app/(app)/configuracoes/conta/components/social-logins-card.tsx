@@ -216,31 +216,31 @@ export function SocialLoginsCard({
                     {provider.label}
                   </p>
 
-                  {isConnected ? (
-                    <Badge className="gap-1 border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300">
-                      <CheckCircle2 className="size-3.5" />
-                      Conectado
-                    </Badge>
-                  ) : (
-                    <Badge className="gap-1 border-zinc-300 bg-zinc-100 text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
-                      <CircleDashed className="size-3.5" />
-                      Não conectado
-                    </Badge>
-                  )}
-                </div>
+                  <div className="flex items-center gap-2">
+                    {isConnected ? (
+                      <Badge className="gap-1 border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300">
+                        <CheckCircle2 className="size-3.5" />
+                        Conectado
+                      </Badge>
+                    ) : (
+                      <Badge className="gap-1 border-zinc-300 bg-zinc-100 text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+                        <CircleDashed className="size-3.5" />
+                        Não conectado
+                      </Badge>
+                    )}
 
-                {canConnect && providerIdForConnect && (
-                  <div className="mt-2 flex justify-end">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleLinkProvider(providerIdForConnect)}
-                      disabled={isLinking}
-                    >
-                      {isLinking ? <Spinner /> : "Conectar"}
-                    </Button>
+                    {canConnect && providerIdForConnect && (
+                      <Button
+                        size="xs"
+                        variant="outline"
+                        onClick={() => handleLinkProvider(providerIdForConnect)}
+                        disabled={isLinking}
+                      >
+                        {isLinking ? <Spinner /> : "Conectar"}
+                      </Button>
+                    )}
                   </div>
-                )}
+                </div>
               </div>
             );
           })}
