@@ -29,7 +29,9 @@ import { betterAuth } from "better-auth";
 
 // Plugin de organização: adiciona suporte multi-tenant com
 // roles (owner, admin, member), convites, times, etc.
-import { organization, twoFactor, username } from "better-auth/plugins";
+import { organization } from "better-auth/plugins/organization";
+import { twoFactor } from "better-auth/plugins/two-factor";
+import { username } from "better-auth/plugins/username";
 import { passkey } from "@better-auth/passkey";
 
 // Nossas definições de permissões e roles customizadas.
@@ -45,12 +47,24 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { db } from "@/lib/db";
 
 // Nossa função de envio de e-mail de autenticação
-import { sendResetPasswordEmail } from "@/server/mail/auth";
+import {
+  sendEmailVerificationLink,
+  sendResetPasswordEmail,
+} from "@/server/mail/auth";
+import { buildPasskeyOptions } from "@/lib/passkey-config";
 
 // Plugin nextCookies: integra os cookies do Better Auth
 // com o sistema de cookies do Next.js (necessário para que
 // Server Components consigam ler a sessão nos headers).
 import { nextCookies } from "better-auth/next-js";
+
+const passkeyOptions = buildPasskeyOptions({
+  betterAuthUrl: process.env.BETTER_AUTH_URL,
+  publicUrl: process.env.NEXT_PUBLIC_URL,
+  passkeyOrigins: process.env.BETTER_AUTH_PASSKEY_ORIGINS,
+  passkeyRpId: process.env.BETTER_AUTH_PASSKEY_RP_ID,
+  passkeyRpName: process.env.BETTER_AUTH_PASSKEY_RP_NAME,
+});
 
 // ============================================================
 // 🎯 EXPORTAÇÃO DA INSTÂNCIA DO AUTH
@@ -83,6 +97,22 @@ export const auth = betterAuth({
         user: { name: user.name, email: user.email },
         url
       });
+    },
+  },
+  emailVerification: {
+    sendVerificationEmail: async ({ user, url }) => {
+      await sendEmailVerificationLink({
+        user: {
+          name: user.name ?? "",
+          email: user.email,
+        },
+        url,
+      });
+    },
+  },
+  user: {
+    changeEmail: {
+      enabled: true,
     },
   },
 
@@ -150,7 +180,7 @@ export const auth = betterAuth({
 
     // 2. Passkeys (WebAuthn)
     // Suporte nativo para autenticação biométrica / chaves de hardware
-    passkey(),
+    passkey(passkeyOptions),
 
     // 3. Username
     // Permite login e registro usando 'username' além de 'email'
