@@ -92,14 +92,6 @@ export default async function AccountSettingsPage() {
           />
           <ProfileCard user={currentUser} />
           <EmailCard user={currentUser} />
-          <RecoveryMethodsCard
-            emailVerified={Boolean(currentUser.emailVerified)}
-            hasPassword={authInsights.hasPassword}
-            hasSocialLogin={authInsights.hasSocialLogin}
-            hasPasskeys={authInsights.passkeysCount > 0}
-            twoFactorEnabled={Boolean(currentUser.twoFactorEnabled)}
-          />
-          <SecurityAlertsCard userId={currentUser.id} />
           <SocialLoginsCard
             socialProviders={authInsights.socialProviders}
             primaryProvider={authInsights.primaryProvider}
@@ -125,6 +117,14 @@ export default async function AccountSettingsPage() {
             socialProviders={authInsights.socialProviders}
             hasPasskeys={authInsights.passkeysCount > 0}
           />
+          <RecoveryMethodsCard
+            emailVerified={Boolean(currentUser.emailVerified)}
+            hasPassword={authInsights.hasPassword}
+            hasSocialLogin={authInsights.hasSocialLogin}
+            hasPasskeys={authInsights.passkeysCount > 0}
+            twoFactorEnabled={Boolean(currentUser.twoFactorEnabled)}
+          />
+          <SecurityAlertsCard userId={currentUser.id} />
           <DangerZoneCard />
         </section>
       </div>
