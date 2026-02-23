@@ -80,17 +80,20 @@ function PasswordInputWithToggle({
   ...props
 }: PasswordInputWithToggleProps) {
   return (
-    <div className="relative">
+    <div className="group flex h-9 w-full rounded-md border border-input bg-transparent shadow-xs transition-[border-color,box-shadow] focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50">
       <Input
         {...props}
         type={isVisible ? "text" : "password"}
-        className={cn("pr-10", className)}
+        className={cn(
+          "h-full rounded-r-none border-0 bg-transparent pr-12 shadow-none focus-visible:ring-0",
+          className,
+        )}
       />
       <Button
         type="button"
         variant="ghost"
-        size="icon-xs"
-        className="absolute right-1 top-1/2 size-7 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+        size="icon-sm"
+        className="h-full rounded-l-none border-l border-input px-2 text-muted-foreground hover:bg-muted/40 hover:text-foreground focus-visible:ring-0"
         onClick={onToggle}
         aria-label={isVisible ? "Ocultar senha" : "Exibir senha"}
       >
@@ -100,7 +103,13 @@ function PasswordInputWithToggle({
   );
 }
 
-function PasswordStrengthHint({ password }: { password: string }) {
+function PasswordStrengthHint({
+  password,
+  className,
+}: {
+  password: string;
+  className?: string;
+}) {
   const deferredPassword = useDeferredValue(password);
   const strength = useMemo(
     () => evaluatePasswordStrength(deferredPassword),
@@ -117,7 +126,7 @@ function PasswordStrengthHint({ password }: { password: string }) {
     `Tempo estimado para quebra offline lenta: ${strength.crackTimeDisplay}.`;
 
   return (
-    <div className="mt-2 space-y-2">
+    <div className={cn("space-y-2", className)}>
       <div className="flex items-center justify-between text-xs">
         <span className="text-muted-foreground">Força da senha</span>
         <span className={cn("font-medium", strength.textClassName)}>
@@ -267,12 +276,15 @@ export function PasswordCard({
                           onToggle={() => toggleVisibility("changeNewPassword")}
                         />
                       </FormControl>
-                      <PasswordStrengthHint password={changeNewPasswordValue ?? ""} />
                       <FormMessage />
                     </FormItem>
                   )}
                 />
               </div>
+              <PasswordStrengthHint
+                password={changeNewPasswordValue ?? ""}
+                className="rounded-md border bg-muted/20 p-3"
+              />
 
               <div className="pt-1">
                 <Button type="submit" disabled={isPending}>
@@ -302,7 +314,6 @@ export function PasswordCard({
                           onToggle={() => toggleVisibility("setNewPassword")}
                         />
                       </FormControl>
-                      <PasswordStrengthHint password={setNewPasswordValue ?? ""} />
                       <FormMessage />
                     </FormItem>
                   )}
@@ -327,6 +338,10 @@ export function PasswordCard({
                   )}
                 />
               </div>
+              <PasswordStrengthHint
+                password={setNewPasswordValue ?? ""}
+                className="rounded-md border bg-muted/20 p-3"
+              />
 
               <div className="pt-1">
                 <Button type="submit" disabled={isPending}>

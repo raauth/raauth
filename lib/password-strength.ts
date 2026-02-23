@@ -1,6 +1,7 @@
 import { zxcvbn, zxcvbnOptions, type Score } from "@zxcvbn-ts/core";
 import * as zxcvbnCommonPackage from "@zxcvbn-ts/language-common";
 import * as zxcvbnEnPackage from "@zxcvbn-ts/language-en";
+import * as zxcvbnPtBrPackage from "@zxcvbn-ts/language-pt-br";
 
 type PasswordStrengthTone = {
   label: "Muito fraca" | "Fraca" | "Razoável" | "Boa" | "Forte";
@@ -49,6 +50,51 @@ const PASSWORD_STRENGTH_TONE: Record<Score, PasswordStrengthTone> = {
 
 let hasConfiguredZxcvbn = false;
 
+const EN_TO_PT_BR_FEEDBACK: Record<string, string> = {
+  "Use a few words, avoid common phrases":
+    "Use várias palavras, mas evite frases comuns.",
+  "No need for symbols, digits, or uppercase letters":
+    "Você pode criar senhas fortes sem usar símbolos, números ou letras maiúsculas.",
+  "Add another word or two. Uncommon words are better.":
+    "Adicione mais palavras menos comuns.",
+  "Straight rows of keys are easy to guess":
+    "Letras que vêm em sequência no teclado são fáceis de adivinhar.",
+  "Short keyboard patterns are easy to guess":
+    "Padrões de teclado curtos são fáceis de adivinhar.",
+  'Repeats like "aaa" are easy to guess':
+    'Caracteres repetidos, como "aaa", são fáceis de adivinhar.',
+  'Repeats like "abcabcabc" are only slightly harder to guess than "abc"':
+    'Padrões repetidos como "abcabcabc" são fáceis de adivinhar.',
+  "Sequences like abc or 6543 are easy to guess":
+    'Sequências comuns de caracteres, como "abc", são fáceis de adivinhar.',
+  "Recent years are easy to guess":
+    "Anos recentes são fáceis de adivinhar.",
+  Dates: "Datas são fáceis de adivinhar.",
+  "This is a top-10 common password": "Esta é uma senha muito usada.",
+  "This is a top-100 common password":
+    "Esta é uma senha usada frequentemente.",
+  "This is a very common password": "Esta é uma senha comumente usada.",
+  "This is similar to a commonly used password":
+    "Isso é semelhante a uma senha comumente usada.",
+  "Single words are easy to guess": "Palavras simples são fáceis de adivinhar.",
+  "Names and surnames by themselves are easy to guess":
+    "Nomes ou sobrenomes são fáceis de adivinhar.",
+  "Common names and surnames are easy to guess":
+    "Nomes e sobrenomes comuns são fáceis de adivinhar.",
+  "Avoid recent years": "Evite anos recentes.",
+  "Avoid years that are associated with you":
+    "Evite anos associados a você.",
+  "Avoid dates and years that are associated with you":
+    "Evite datas e anos associados a você.",
+  "Avoid sequences": "Evite sequências comuns de caracteres.",
+  "Avoid repeated words and characters":
+    "Evite repetir sequências de caracteres e palavras.",
+  "Avoid common words written backwards":
+    'Evite utilizar palavras comuns escritas de "trás para frente".',
+  "Avoid predictable substitutions like '@' instead of 'a'":
+    "Evite substituições previsíveis de letras, como '@' por 'a'.",
+};
+
 function ensureZxcvbnConfigured() {
   if (hasConfiguredZxcvbn) {
     return;
@@ -58,9 +104,10 @@ function ensureZxcvbnConfigured() {
     dictionary: {
       ...zxcvbnCommonPackage.dictionary,
       ...zxcvbnEnPackage.dictionary,
+      ...zxcvbnPtBrPackage.dictionary,
     },
     graphs: zxcvbnCommonPackage.adjacencyGraphs,
-    translations: zxcvbnEnPackage.translations,
+    translations: zxcvbnPtBrPackage.translations,
     useLevenshteinDistance: true,
   });
 
@@ -105,14 +152,21 @@ export function evaluatePasswordStrength(
   const score = toScore(result.score);
   const tone = resolvePasswordStrengthTone(score);
 
+  const translatedWarning = result.feedback.warning
+    ? EN_TO_PT_BR_FEEDBACK[result.feedback.warning] || result.feedback.warning
+    : null;
+  const translatedSuggestions = result.feedback.suggestions.map(
+    (suggestion) => EN_TO_PT_BR_FEEDBACK[suggestion] || suggestion,
+  );
+
   return {
     score,
     label: tone.label,
     progressPercent: ((score + 1) / 5) * 100,
     progressClassName: tone.progressClassName,
     textClassName: tone.textClassName,
-    warning: result.feedback.warning || null,
-    suggestions: result.feedback.suggestions,
+    warning: translatedWarning,
+    suggestions: translatedSuggestions,
     crackTimeDisplay: result.crackTimesDisplay.offlineSlowHashing1e4PerSecond,
   };
 }

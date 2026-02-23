@@ -28,4 +28,23 @@ describe("password strength helper", () => {
       textClassName: "text-emerald-500",
     });
   });
+
+  test("returns translated feedback in portuguese", () => {
+    const result = evaluatePasswordStrength("test");
+    assert.ok(result);
+
+    const combinedFeedback = [result.warning, ...result.suggestions]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    assert.equal(
+      combinedFeedback.includes("single words are easy to guess"),
+      false,
+    );
+    assert.ok(
+      combinedFeedback.includes("palavr") ||
+        combinedFeedback.includes("adicione"),
+    );
+  });
 });
