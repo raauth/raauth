@@ -180,6 +180,14 @@ export function PasswordCard({
     control: setPasswordForm.control,
     name: "newPassword",
   });
+  const hasChangePasswordRowError = Boolean(
+    changePasswordForm.formState.errors.currentPassword ||
+      changePasswordForm.formState.errors.newPassword,
+  );
+  const hasSetPasswordRowError = Boolean(
+    setPasswordForm.formState.errors.newPassword ||
+      setPasswordForm.formState.errors.confirmPassword,
+  );
 
   function toggleVisibility(field: keyof PasswordFieldVisibilityState) {
     setVisibility((previous) => ({
@@ -265,7 +273,9 @@ export function PasswordCard({
                           onToggle={() => toggleVisibility("currentPassword")}
                         />
                       </FormControl>
-                      <FormMessage />
+                      <div className={cn(hasChangePasswordRowError && "min-h-10")}>
+                        <FormMessage />
+                      </div>
                     </FormItem>
                   )}
                 />
@@ -284,7 +294,9 @@ export function PasswordCard({
                           onToggle={() => toggleVisibility("changeNewPassword")}
                         />
                       </FormControl>
-                      <FormMessage />
+                      <div className={cn(hasChangePasswordRowError && "min-h-10")}>
+                        <FormMessage />
+                      </div>
                     </FormItem>
                   )}
                 />
@@ -322,7 +334,9 @@ export function PasswordCard({
                           onToggle={() => toggleVisibility("setNewPassword")}
                         />
                       </FormControl>
-                      <FormMessage />
+                      <div className={cn(hasSetPasswordRowError && "min-h-10")}>
+                        <FormMessage />
+                      </div>
                     </FormItem>
                   )}
                 />
@@ -341,7 +355,9 @@ export function PasswordCard({
                           onToggle={() => toggleVisibility("confirmPassword")}
                         />
                       </FormControl>
-                      <FormMessage />
+                      <div className={cn(hasSetPasswordRowError && "min-h-10")}>
+                        <FormMessage />
+                      </div>
                     </FormItem>
                   )}
                 />
