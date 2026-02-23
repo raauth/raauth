@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import { BellRing, Mail, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Card,
   CardContent,
@@ -13,6 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 
 type SecurityAlertsCardProps = {
   userId: string;
@@ -35,6 +35,33 @@ const DEFAULT_ALERTS_STATE: AlertsState = {
 function buildStorageKey(userId: string) {
   return `account-security-alerts:${userId}`;
 }
+
+const ALERT_ITEMS: Array<{
+  key: keyof AlertsState;
+  label: string;
+  description: string;
+}> = [
+  {
+    key: "newLogin",
+    label: "Novo login",
+    description: "Dispositivo ou navegador diferente.",
+  },
+  {
+    key: "passwordChanges",
+    label: "Senha atualizada",
+    description: "Troca ou definição de senha local.",
+  },
+  {
+    key: "emailChanges",
+    label: "E-mail alterado",
+    description: "Mudanças no e-mail principal da conta.",
+  },
+  {
+    key: "securityEvents",
+    label: "Eventos de segurança",
+    description: "2FA, passkeys e revogação de sessões.",
+  },
+];
 
 export function SecurityAlertsCard({ userId }: SecurityAlertsCardProps) {
   const storageKey = useMemo(() => buildStorageKey(userId), [userId]);
@@ -106,50 +133,34 @@ export function SecurityAlertsCard({ userId }: SecurityAlertsCardProps) {
             Alertas por e-mail
           </Label>
 
-          <div className="space-y-3 text-sm">
-            <label className="flex items-center justify-between gap-3">
-              <span>Novo login em dispositivo ou navegador</span>
-              <Checkbox
-                checked={alerts.newLogin}
-                disabled={!isReady}
-                onCheckedChange={(checked) =>
-                  updateAlert("newLogin", Boolean(checked))
-                }
-              />
-            </label>
+          <div className="grid gap-2 md:grid-cols-2">
+            {ALERT_ITEMS.map((item) => {
+              const id = `security-alert-${item.key}`;
 
-            <label className="flex items-center justify-between gap-3">
-              <span>Troca ou definição de senha</span>
-              <Checkbox
-                checked={alerts.passwordChanges}
-                disabled={!isReady}
-                onCheckedChange={(checked) =>
-                  updateAlert("passwordChanges", Boolean(checked))
-                }
-              />
-            </label>
-
-            <label className="flex items-center justify-between gap-3">
-              <span>Alteração do e-mail principal</span>
-              <Checkbox
-                checked={alerts.emailChanges}
-                disabled={!isReady}
-                onCheckedChange={(checked) =>
-                  updateAlert("emailChanges", Boolean(checked))
-                }
-              />
-            </label>
-
-            <label className="flex items-center justify-between gap-3">
-              <span>Ações de segurança (2FA, passkeys e sessões)</span>
-              <Checkbox
-                checked={alerts.securityEvents}
-                disabled={!isReady}
-                onCheckedChange={(checked) =>
-                  updateAlert("securityEvents", Boolean(checked))
-                }
-              />
-            </label>
+              return (
+                <div
+                  key={item.key}
+                  className="rounded-md border bg-background/50 p-3"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <label htmlFor={id} className="space-y-1">
+                      <p className="text-sm font-medium leading-none">{item.label}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {item.description}
+                      </p>
+                    </label>
+                    <Switch
+                      id={id}
+                      checked={alerts[item.key]}
+                      disabled={!isReady}
+                      onCheckedChange={(checked) =>
+                        updateAlert(item.key, Boolean(checked))
+                      }
+                    />
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
