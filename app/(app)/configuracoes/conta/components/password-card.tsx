@@ -188,6 +188,12 @@ export function PasswordCard({
     }));
   }
 
+  function reloadPageAfterSuccess() {
+    setTimeout(() => {
+      window.location.reload();
+    }, 450);
+  }
+
   async function handleChangePassword(
     values: z.infer<typeof changePasswordSchema>,
   ) {
@@ -202,6 +208,7 @@ export function PasswordCard({
 
     toast.success("Senha alterada com sucesso!");
     changePasswordForm.reset();
+    reloadPageAfterSuccess();
   }
 
   async function handleSetPassword(values: z.infer<typeof setPasswordSchema>) {
@@ -218,6 +225,7 @@ export function PasswordCard({
 
     toast.success("Senha definida com sucesso!");
     setPasswordForm.reset();
+    reloadPageAfterSuccess();
   }
 
   return (
