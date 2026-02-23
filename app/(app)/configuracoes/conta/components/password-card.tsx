@@ -80,12 +80,12 @@ function PasswordInputWithToggle({
   ...props
 }: PasswordInputWithToggleProps) {
   return (
-    <div className="group flex h-9 w-full rounded-md border border-input bg-transparent shadow-xs transition-[border-color,box-shadow] focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50">
+    <div className="group flex h-9 w-full overflow-hidden rounded-md border border-input bg-transparent shadow-xs transition-[border-color,box-shadow] focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50">
       <Input
         {...props}
         type={isVisible ? "text" : "password"}
         className={cn(
-          "h-full rounded-r-none border-0 bg-transparent pr-12 shadow-none focus-visible:ring-0",
+          "h-full min-w-0 rounded-r-none border-0 bg-transparent pr-12 shadow-none focus-visible:ring-0",
           className,
         )}
       />
@@ -93,7 +93,7 @@ function PasswordInputWithToggle({
         type="button"
         variant="ghost"
         size="icon-sm"
-        className="h-full rounded-l-none border-l border-input px-2 text-muted-foreground hover:bg-muted/40 hover:text-foreground focus-visible:ring-0"
+        className="relative z-10 h-full w-10 min-w-10 shrink-0 rounded-none border-l border-input bg-background/80 px-2 text-foreground/80 hover:bg-muted/40 hover:text-foreground focus-visible:ring-0"
         onClick={onToggle}
         aria-label={isVisible ? "Ocultar senha" : "Exibir senha"}
       >
@@ -265,7 +265,9 @@ export function PasswordCard({
                           onToggle={() => toggleVisibility("currentPassword")}
                         />
                       </FormControl>
-                      <FormMessage />
+                      <div className="min-h-10">
+                        <FormMessage />
+                      </div>
                     </FormItem>
                   )}
                 />
@@ -284,7 +286,9 @@ export function PasswordCard({
                           onToggle={() => toggleVisibility("changeNewPassword")}
                         />
                       </FormControl>
-                      <FormMessage />
+                      <div className="min-h-10">
+                        <FormMessage />
+                      </div>
                     </FormItem>
                   )}
                 />
@@ -322,7 +326,9 @@ export function PasswordCard({
                           onToggle={() => toggleVisibility("setNewPassword")}
                         />
                       </FormControl>
-                      <FormMessage />
+                      <div className="min-h-10">
+                        <FormMessage />
+                      </div>
                     </FormItem>
                   )}
                 />
@@ -341,7 +347,9 @@ export function PasswordCard({
                           onToggle={() => toggleVisibility("confirmPassword")}
                         />
                       </FormControl>
-                      <FormMessage />
+                      <div className="min-h-10">
+                        <FormMessage />
+                      </div>
                     </FormItem>
                   )}
                 />
