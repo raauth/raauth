@@ -76,7 +76,7 @@ export default async function AccountSettingsPage() {
     <div className="mx-auto w-full max-w-6xl space-y-6 pb-12">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">
-          Configurações da Conta
+          Configurações da conta
         </h1>
         <p className="text-muted-foreground">
           Gerencie seus dados e a segurança da sua conta.
