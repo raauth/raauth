@@ -36,7 +36,7 @@ function RecoveryRow({
   active: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-lg border p-3 text-sm">
+    <div className="flex h-full items-center justify-between gap-3 rounded-lg border p-3 text-sm">
       <p className="flex items-center gap-2 font-medium">
         <Icon className="size-4 text-muted-foreground" />
         {label}
@@ -74,7 +74,7 @@ export function RecoveryMethodsCard({
           com segurança.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="grid gap-3 md:grid-cols-2">
         <RecoveryRow
           icon={MailCheck}
           label="E-mail verificado"
@@ -103,7 +103,7 @@ export function RecoveryMethodsCard({
           active={hasPasskeys}
         />
 
-        <div className="flex items-center justify-between gap-3 rounded-lg border p-3 text-sm">
+        <div className="flex h-full items-center justify-between gap-3 rounded-lg border p-3 text-sm">
           <p className="flex items-center gap-2 font-medium">
             {twoFactorEnabled ? (
               <ShieldCheck className="size-4 text-muted-foreground" />
