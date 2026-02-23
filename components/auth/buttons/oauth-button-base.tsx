@@ -32,7 +32,7 @@ export function OAuthButtonBase({
     try {
       setLoading(true);
       await authClient.signIn.social({ provider });
-    } catch (error) {
+    } catch {
       // se der erro, reabilita o botão
       setLoading(false);
     }

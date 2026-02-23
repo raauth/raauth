@@ -9,6 +9,18 @@ import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import { getErrorMessage } from "@/lib/errors";
 
+function extractErrorCode(error: unknown): string {
+  if (typeof error !== "object" || error === null) {
+    return "";
+  }
+
+  if ("code" in error && typeof error.code === "string") {
+    return error.code;
+  }
+
+  return "";
+}
+
 export function PasskeyLoginButton() {
   const router = useRouter();
   const [isPending, setIsPending] = useState(false);
@@ -20,7 +32,7 @@ export function PasskeyLoginButton() {
     setIsPending(false);
 
     if (error) {
-      toast.error(getErrorMessage((error as any).code || ""));
+      toast.error(getErrorMessage(extractErrorCode(error)));
     } else {
       toast.success("Login com passkey realizado com sucesso!");
       router.push("/");

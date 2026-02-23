@@ -25,6 +25,18 @@ import { CardContent } from "@/app/(auth)/components/card-content";
 import { EyeIcon, EyeClosedIcon } from "lucide-react";
 import { getErrorMessage } from "@/lib/errors";
 
+function extractErrorCode(error: unknown): string {
+  if (typeof error !== "object" || error === null) {
+    return "";
+  }
+
+  if ("code" in error && typeof error.code === "string") {
+    return error.code;
+  }
+
+  return "";
+}
+
 const resetPasswordSchema = z
   .object({
     password: z
@@ -62,13 +74,13 @@ function ResetForm() {
     setIsPending(true);
     const { error } = await authClient.resetPassword({
       newPassword: values.password,
-      token: token as string,
+      token,
     });
 
     setIsPending(false);
 
     if (error) {
-      toast.error(getErrorMessage((error as any).code || ""));
+      toast.error(getErrorMessage(extractErrorCode(error)));
     } else {
       toast.success("Senha alterada com sucesso! Você já pode entrar.");
       router.push("/entrar");

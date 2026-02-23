@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -24,6 +24,31 @@ import { Check, EyeIcon, EyeClosedIcon, X } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/errors";
+
+function extractErrorCode(error: unknown): string {
+  if (typeof error !== "object" || error === null) {
+    return "";
+  }
+
+  if ("code" in error && typeof error.code === "string") {
+    return error.code;
+  }
+
+  return "";
+}
+
+function extractUserEmail(data: unknown): string {
+  if (typeof data !== "object" || data === null || !("user" in data)) {
+    return "";
+  }
+
+  const user = data.user;
+  if (typeof user !== "object" || user === null || !("email" in user)) {
+    return "";
+  }
+
+  return typeof user.email === "string" ? user.email : "";
+}
 
 // esquema do zod:
 const registerInfos = z.object({
@@ -74,37 +99,29 @@ export function RegisterForm() {
     setShowErrorFlash(false);
     setIsPending(true);
 
-    await authClient.signUp.email(
-      {
-        email: values.email,
-        password: values.password,
-        name: values.name + " " + values.lastname,
-        username: values.username,
-        callbackURL: "",
-      },
-      {
-        onRequest: () => {
-          setIsPending(true);
-        },
-        onSuccess: (ctx: any) => {
-          setIsPending(false);
-          setShowCheck(true);
+    const { data, error } = await authClient.signUp.email({
+      email: values.email,
+      password: values.password,
+      name: values.name + " " + values.lastname,
+      username: values.username,
+      callbackURL: "",
+    });
+    setIsPending(false);
 
-          sessionStorage.setItem("registerSuccess", "true");
-          sessionStorage.setItem("registeredEmail", ctx.data.user.email);
+    if (error) {
+      setShowErrorFlash(true);
+      setTimeout(() => setShowErrorFlash(false), 2000);
+      toast.error(getErrorMessage(extractErrorCode(error)));
+      return;
+    }
 
-          setTimeout(() => {
-            router.push("/criar-conta/confirmar");
-          }, 1000);
-        },
-        onError: (ctx: any) => {
-          setIsPending(false);
-          setShowErrorFlash(true);
-          setTimeout(() => setShowErrorFlash(false), 2000);
-          toast.error(getErrorMessage(ctx.error.code));
-        },
-      },
-    );
+    setShowCheck(true);
+    sessionStorage.setItem("registerSuccess", "true");
+    sessionStorage.setItem("registeredEmail", extractUserEmail(data));
+
+    setTimeout(() => {
+      router.push("/criar-conta/confirmar");
+    }, 1000);
   }
 
   return (

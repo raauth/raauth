@@ -27,6 +27,53 @@ import { EyeIcon, EyeClosedIcon } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { getErrorMessage } from "@/lib/errors";
 
+type TwoFactorClient = {
+  twoFactor: {
+    verifyTotp: (input: { code: string }) => Promise<{
+      error?: unknown;
+    }>;
+  };
+};
+
+const typedTwoFactorClient = authClient as unknown as TwoFactorClient;
+
+function extractErrorCode(error: unknown): string {
+  if (typeof error !== "object" || error === null) {
+    return "";
+  }
+
+  if ("code" in error && typeof error.code === "string") {
+    return error.code;
+  }
+
+  return "";
+}
+
+function extractUserName(data: unknown): string {
+  if (typeof data !== "object" || data === null || !("user" in data)) {
+    return "";
+  }
+
+  const user = data.user;
+  if (typeof user !== "object" || user === null || !("name" in user)) {
+    return "";
+  }
+
+  return typeof user.name === "string" ? user.name : "";
+}
+
+function hasTwoFactorRedirect(data: unknown): boolean {
+  if (typeof data !== "object" || data === null) {
+    return false;
+  }
+
+  if (!("twoFactorRedirect" in data)) {
+    return false;
+  }
+
+  return data.twoFactorRedirect === true;
+}
+
 // esquema do zod:
 // TODO: melhorar a validação para não aceitar e-mails vazios
 const loginInfos = z.object({
@@ -60,16 +107,14 @@ export function LoginForm() {
 
   async function handleVerifyOTP() {
     setIsPending(true);
-    const { error } = await (authClient as any).twoFactor.verifyTotp({
+    const { error } = await typedTwoFactorClient.twoFactor.verifyTotp({
       code: otpCode,
     });
 
     setIsPending(false);
 
     if (error) {
-      toast.error(
-        getErrorMessage((error as any).code || "") || "Código inválido",
-      );
+      toast.error(getErrorMessage(extractErrorCode(error)) || "Código inválido");
     } else {
       toast.success("Login efetuado com sucesso!");
       router.push("/");
@@ -79,33 +124,27 @@ export function LoginForm() {
   async function onSubmit(values: z.infer<typeof loginInfos>) {
     setIsPending(true);
 
-    await authClient.signIn.email(
-      {
-        email: values.email,
-        password: values.password,
-      },
-      {
-        onRequest: () => {
-          setIsPending(true);
-        },
-        onSuccess: (ctx: any) => {
-          setIsPending(false);
-          if (ctx.data?.twoFactorRedirect) {
-            setShowOtpInput(true);
-            toast.info("Autenticação de duas etapas necessária.");
-            return;
-          }
+    const { data, error } = await authClient.signIn.email({
+      email: values.email,
+      password: values.password,
+    });
+    setIsPending(false);
 
-          toast.success(`Bem-vindo(a), ${ctx.data.user.name}!`);
-          router.push("/");
-        },
-        onError: (ctx: any) => {
-          setIsPending(false);
-          toast.error(getErrorMessage(ctx.error.code));
-          form.setValue("password", "");
-        },
-      },
-    );
+    if (error) {
+      toast.error(getErrorMessage(extractErrorCode(error)));
+      form.setValue("password", "");
+      return;
+    }
+
+    if (hasTwoFactorRedirect(data)) {
+      setShowOtpInput(true);
+      toast.info("Autenticação de duas etapas necessária.");
+      return;
+    }
+
+    const userName = extractUserName(data) || "usuário";
+    toast.success(`Bem-vindo(a), ${userName}!`);
+    router.push("/");
   }
 
   return (

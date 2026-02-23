@@ -286,13 +286,15 @@ model Passkey {
   publicKey      String
   userId         String
   user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  webauthnUserID String
+  credentialID   String
   counter        Int
   deviceType     String
   backedUp       Boolean
   transports     String?
+  aaguid         String?
   createdAt      DateTime? @default(now())
 
+  @@index([credentialID])
   @@index([userId])
   @@map("passkey")
 }

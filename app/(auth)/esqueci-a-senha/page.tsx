@@ -23,6 +23,18 @@ import { RaauthCardHeader } from "@/app/(auth)/components/raauth-card-header";
 import { CardContent } from "@/app/(auth)/components/card-content";
 import { getErrorMessage } from "@/lib/errors";
 
+function extractErrorCode(error: unknown): string {
+  if (typeof error !== "object" || error === null) {
+    return "";
+  }
+
+  if ("code" in error && typeof error.code === "string") {
+    return error.code;
+  }
+
+  return "";
+}
+
 const forgotPasswordSchema = z.object({
   email: z.email({ message: "O e-mail digitado não é válido" }).trim(),
 });
@@ -46,7 +58,7 @@ export default function ForgotPasswordPage() {
     setIsPending(false);
 
     if (error) {
-      toast.error(getErrorMessage((error as any).code || ""));
+      toast.error(getErrorMessage(extractErrorCode(error)));
     } else {
       setIsSuccess(true);
       toast.success(
