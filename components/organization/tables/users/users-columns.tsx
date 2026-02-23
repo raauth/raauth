@@ -1,7 +1,7 @@
 "use client";
 
 // bibliotecas, libs e funções:
-import { startTransition, useActionState, useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { addMember } from "@/server/actions/members";
 import { ColumnDef } from "@tanstack/react-table";
@@ -75,30 +75,31 @@ function UserActionCell({
   user: User;
   organizationId: string;
 }) {
-  const [state, action, isPending] = useActionState(addMember, null);
+  const [isPending, setIsPending] = useState(false);
   const [role, setRole] = useState<"member" | "admin" | "owner">("member");
   const router = useRouter();
   const [open, setOpen] = useState(false);
 
   async function act() {
-    startTransition(() => {
-      action({ organizationId, userId: user.id, role });
+    setIsPending(true);
+    const result = await addMember(null, {
+      organizationId,
+      userId: user.id,
+      role,
     });
-  }
+    setIsPending(false);
 
-  // 2. O useEffect para monitorar a conclusão
-  useEffect(() => {
-    // Verifica se não está pendente E o estado indica sucesso
-    if (!isPending && state?.success === true) {
+    if (result.success) {
       toast.success("Membro adicionado com sucesso.");
       setOpen(false);
       router.refresh();
+      return;
     }
-    // Opcional: Tratar erros
-    if (!isPending && state?.success === false) {
+
+    if (!result.success) {
       toast.error("Houve um erro ao adicionar o membro. Tente novamente.");
     }
-  }, [isPending, state, router]); // Dependências: Roda sempre que isPending ou state mudar
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -144,11 +145,9 @@ function UserActionCell({
           <DialogClose asChild>
             <Button variant="destructive">Cancelar</Button>
           </DialogClose>
-          <DialogClose asChild>
-            <Button onClick={() => act()}>
-              {isPending ? <Spinner /> : "Adicionar"}
-            </Button>
-          </DialogClose>
+          <Button onClick={() => void act()} disabled={isPending}>
+            {isPending ? <Spinner /> : "Adicionar"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

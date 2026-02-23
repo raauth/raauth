@@ -36,6 +36,25 @@ const createOrganizationSchema = z.object({
 
 type CreateOrganizationFormValues = z.infer<typeof createOrganizationSchema>;
 
+type OrganizationClient = {
+  organization: {
+    create: (input: {
+      name: string;
+      slug: string;
+    }) => Promise<{
+      data?: {
+        id: string;
+      } | null;
+      error?: {
+        message?: string;
+      } | null;
+    }>;
+    setActive: (input: { organizationId: string }) => Promise<unknown>;
+  };
+};
+
+const typedOrganizationClient = authClient as unknown as OrganizationClient;
+
 export function CreateOrganizationForm() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -52,7 +71,7 @@ export function CreateOrganizationForm() {
     setIsLoading(true);
 
     try {
-      const response = await (authClient as any).organization.create({
+      const response = await typedOrganizationClient.organization.create({
         name: data.name,
         slug: data.slug,
       });
@@ -61,7 +80,7 @@ export function CreateOrganizationForm() {
         toast.success("Organização criada com sucesso!");
 
         // Define no client state do better-auth
-        await (authClient as any).organization.setActive({
+        await typedOrganizationClient.organization.setActive({
           organizationId: response.data.id,
         });
 
@@ -74,7 +93,7 @@ export function CreateOrganizationForm() {
       } else {
         toast.error(response.error?.message || "Erro ao criar organização");
       }
-    } catch (error) {
+    } catch {
       toast.error("Ocorreu um erro inesperado ao criar organização.");
     } finally {
       setIsLoading(false);

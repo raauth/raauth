@@ -14,9 +14,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
-import { authClient } from "@/lib/auth-client";
 import { AlertTriangle } from "lucide-react";
 import { getErrorMessage } from "@/lib/errors";
+import { deleteAccountAction } from "@/server/actions/account";
 
 export function DangerZoneCard() {
   const router = useRouter();
@@ -31,13 +31,15 @@ export function DangerZoneCard() {
     }
 
     setIsDeleting(true);
-    const { error } = await authClient.deleteUser({
+    const { data, error } = await deleteAccountAction({
       password,
     });
     setIsDeleting(false);
 
     if (error) {
-      toast.error(getErrorMessage(error.code || "UNKNOWN_ERROR"));
+      toast.error(getErrorMessage(error.code));
+    } else if (!data?.success) {
+      toast.error("Não foi possível excluir a conta no momento.");
     } else {
       toast.success("Conta excluída com sucesso.");
       router.push("/entrar");

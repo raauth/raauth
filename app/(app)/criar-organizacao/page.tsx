@@ -1,8 +1,8 @@
 import { CreateOrganizationForm } from "@/components/organizations/create-organization-form";
 
 export const metadata = {
-  title: "Criar Organização | RAAuth",
-  description: "Crie uma nova organização ou workspace no RAAuth",
+  title: "Criar Organização | Raauth",
+  description: "Crie uma nova organização ou workspace no Raauth",
 };
 
 export default function CreateOrganizationPage() {

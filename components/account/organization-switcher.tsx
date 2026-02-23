@@ -77,7 +77,7 @@ export function OrganizationSwitcher({
             error: "Houve um erro inesperado ao alterar organizacao",
           });
         }
-      } catch (error) {
+      } catch {
         if (silent) {
           toast.error("Nao foi possivel definir a organizacao ativa");
         }

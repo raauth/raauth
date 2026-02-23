@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { authClient } from "@/lib/auth-client";
 import { IdCardLanyard } from "lucide-react";

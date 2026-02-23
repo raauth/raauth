@@ -1,5 +1,6 @@
 // importações de dependências:
 import type { Metadata } from "next";
+import Link from "next/link";
 
 // importações de fontes:
 import { Geist, Geist_Mono } from "next/font/google";
@@ -43,14 +44,10 @@ export default function Page() {
             <h1 className="text-5xl font-mono border-r border-black dark:border-white pr-4">404</h1>
             <div>
               <p>Hum... Não temos esta página.</p>
-              {/* Utiliza a tag <a> para forçar o recarregamento da página e garantir a troca correta de layout ao sair da página 404. */}
-              <a
-                href="/"
-                className="underline flex items-center gap-2"
-              >
+              <Link href="/" className="underline flex items-center gap-2">
                 <p>Voltar à página inicial</p>
                 <MoveRightIcon size={18} />
-              </a>
+              </Link>
             </div>
           </main>
           <Toaster visibleToasts={1} />

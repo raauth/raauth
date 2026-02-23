@@ -1,7 +1,6 @@
 // componentes:
 // componentes:
 import {
-  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,

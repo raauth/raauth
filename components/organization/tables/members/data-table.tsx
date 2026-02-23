@@ -54,6 +54,7 @@ export function MembersDataTable<TData, TValue>({
     React.useState<VisibilityState>({})
 
   // Inicialização da instância da tabela com os hooks e estados necessários
+  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data,
     columns,

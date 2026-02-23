@@ -1,17 +1,16 @@
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
 
-import { type Member } from "@/prisma/client/client"
+import { type Member, type User } from "@/prisma/client/client"
 
 interface MembersTablePros {
-  members: Member[]
+  members: Array<Member & { user: User }>
 }
 
 export function MembersTable({ members }: MembersTablePros) {
@@ -25,7 +24,7 @@ export function MembersTable({ members }: MembersTablePros) {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {members.map((member: any) => (
+        {members.map((member) => (
           <TableRow key={member.id}>
             <TableCell>{member.user.name}</TableCell>
             <TableCell>{member.user.email}</TableCell>

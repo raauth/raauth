@@ -1,7 +1,7 @@
 "use client";
 
 // bibliotecas, libs e funções:
-import { startTransition, useActionState, useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ColumnDef } from "@tanstack/react-table";
 import { removeMember } from "@/server/actions/members";
@@ -86,29 +86,29 @@ function MemberActionsCell({
   organizationId: string;
   user: User;
 }) {
-  const [state, action, isPending] = useActionState(removeMember, null);
+  const [isPending, setIsPending] = useState(false);
   const router = useRouter();
   const [open, setOpen] = useState(false);
 
   async function act() {
-    startTransition(() => {
-      action({ organizationId, memberId: member.id });
+    setIsPending(true);
+    const result = await removeMember(null, {
+      organizationId,
+      memberId: member.id,
     });
-  }
+    setIsPending(false);
 
-  // 2. O useEffect para monitorar a conclusão
-  useEffect(() => {
-    // Verifica se não está pendente E o estado indica sucesso
-    if (!isPending && state?.success === true) {
+    if (result.success) {
       toast.success("Membro removido com sucesso.");
       setOpen(false);
       router.refresh();
+      return;
     }
-    // Opcional: Tratar erros
-    if (!isPending && state?.success === false) {
+
+    if (!result.success) {
       toast.error("Houve um erro ao remover o membro. Tente novamente.");
     }
-  }, [isPending, state]); // Dependências: Roda sempre que isPending ou state mudar
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -135,11 +135,9 @@ function MemberActionsCell({
           <DialogClose asChild>
             <Button variant="destructive">Cancelar</Button>
           </DialogClose>
-          <DialogClose asChild>
-            <Button onClick={() => act()}>
-              {isPending ? <Spinner /> : "Remover"}
-            </Button>
-          </DialogClose>
+          <Button onClick={() => void act()} disabled={isPending}>
+            {isPending ? <Spinner /> : "Remover"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
