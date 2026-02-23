@@ -265,9 +265,7 @@ export function PasswordCard({
                           onToggle={() => toggleVisibility("currentPassword")}
                         />
                       </FormControl>
-                      <div className="min-h-10">
-                        <FormMessage />
-                      </div>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
@@ -286,9 +284,7 @@ export function PasswordCard({
                           onToggle={() => toggleVisibility("changeNewPassword")}
                         />
                       </FormControl>
-                      <div className="min-h-10">
-                        <FormMessage />
-                      </div>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
@@ -326,9 +322,7 @@ export function PasswordCard({
                           onToggle={() => toggleVisibility("setNewPassword")}
                         />
                       </FormControl>
-                      <div className="min-h-10">
-                        <FormMessage />
-                      </div>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
@@ -347,9 +341,7 @@ export function PasswordCard({
                           onToggle={() => toggleVisibility("confirmPassword")}
                         />
                       </FormControl>
-                      <div className="min-h-10">
-                        <FormMessage />
-                      </div>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
