@@ -3,7 +3,8 @@
 import type { ComponentType } from "react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { FaGithub, FaGoogle, FaMicrosoft } from "react-icons/fa6";
+import { FaGithub, FaMicrosoft } from "react-icons/fa6";
+import { FcGoogle } from "react-icons/fc";
 import { CheckCircle2, CircleDashed, Link2 } from "lucide-react";
 
 import { authClient } from "@/lib/auth-client";
@@ -44,21 +45,19 @@ const providerConfig: Record<
   {
     label: string;
     Icon: ComponentType<{ className?: string }>;
-    iconColor: string;
+    iconColor?: string;
     badgeClassName: string;
   }
 > = {
   google: {
     label: "Google",
-    Icon: FaGoogle,
-    iconColor: "#EA4335",
+    Icon: FcGoogle,
     badgeClassName:
       "border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300",
   },
   github: {
     label: "GitHub",
     Icon: FaGithub,
-    iconColor: "#24292F",
     badgeClassName:
       "border-zinc-300 bg-zinc-100 text-zinc-800 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100",
   },
@@ -161,7 +160,7 @@ export function SocialLoginsCard({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Link2 className="size-4" />
-          Logins Sociais
+          Logins sociais
         </CardTitle>
         <CardDescription>
           Visualize provedores conectados e vincule outros serviços sociais.
