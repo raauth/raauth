@@ -23,7 +23,7 @@ import { authClient } from "@/lib/auth-client";
 
 // Tipo que garante que só usamos códigos de erro que o
 // Better Auth realmente retorna. Previne erros de digitação.
-type CustomErrorCode = "PASSWORD_ALREADY_DEFINED";
+type CustomErrorCode = "PASSWORD_ALREADY_DEFINED" | "INVALID_IMAGE_URL";
 
 type ErrorTypes = Partial<
 	Record<
@@ -81,6 +81,9 @@ const errorCodes = {
 	},
 	PASSWORD_ALREADY_DEFINED: {
 		pt_br: "Esta conta já possui senha definida.",
+	},
+	INVALID_IMAGE_URL: {
+		pt_br: "A URL da foto de perfil é inválida.",
 	},
 } satisfies ErrorTypes;
 

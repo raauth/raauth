@@ -1,9 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
+import {
+  useDeferredValue,
+  useMemo,
+  useState,
+  type ComponentProps,
+} from "react";
+import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Eye, EyeOff, KeyRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -24,6 +30,8 @@ import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/errors";
+import { evaluatePasswordStrength } from "@/lib/password-strength";
+import { cn } from "@/lib/utils";
 import {
   changePasswordAction,
   setPasswordAction,
@@ -53,11 +61,91 @@ type PasswordCardProps = {
   createdWithSocialLogin: boolean;
 };
 
+type PasswordFieldVisibilityState = {
+  currentPassword: boolean;
+  changeNewPassword: boolean;
+  setNewPassword: boolean;
+  confirmPassword: boolean;
+};
+
+type PasswordInputWithToggleProps = ComponentProps<typeof Input> & {
+  isVisible: boolean;
+  onToggle: () => void;
+};
+
+function PasswordInputWithToggle({
+  isVisible,
+  onToggle,
+  className,
+  ...props
+}: PasswordInputWithToggleProps) {
+  return (
+    <div className="relative">
+      <Input
+        {...props}
+        type={isVisible ? "text" : "password"}
+        className={cn("pr-10", className)}
+      />
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon-xs"
+        className="absolute right-1 top-1/2 size-7 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+        onClick={onToggle}
+        aria-label={isVisible ? "Ocultar senha" : "Exibir senha"}
+      >
+        {isVisible ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+      </Button>
+    </div>
+  );
+}
+
+function PasswordStrengthHint({ password }: { password: string }) {
+  const deferredPassword = useDeferredValue(password);
+  const strength = useMemo(
+    () => evaluatePasswordStrength(deferredPassword),
+    [deferredPassword],
+  );
+
+  if (!strength) {
+    return null;
+  }
+
+  const helperText =
+    strength.warning ||
+    strength.suggestions[0] ||
+    `Tempo estimado para quebra offline lenta: ${strength.crackTimeDisplay}.`;
+
+  return (
+    <div className="mt-2 space-y-2">
+      <div className="flex items-center justify-between text-xs">
+        <span className="text-muted-foreground">Força da senha</span>
+        <span className={cn("font-medium", strength.textClassName)}>
+          {strength.label}
+        </span>
+      </div>
+      <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+        <div
+          className={cn("h-full transition-all", strength.progressClassName)}
+          style={{ width: `${strength.progressPercent}%` }}
+        />
+      </div>
+      <p className="text-xs text-muted-foreground">{helperText}</p>
+    </div>
+  );
+}
+
 export function PasswordCard({
   hasPassword,
   createdWithSocialLogin,
 }: PasswordCardProps) {
   const [isPending, setIsPending] = useState(false);
+  const [visibility, setVisibility] = useState<PasswordFieldVisibilityState>({
+    currentPassword: false,
+    changeNewPassword: false,
+    setNewPassword: false,
+    confirmPassword: false,
+  });
 
   const changePasswordForm = useForm<z.infer<typeof changePasswordSchema>>({
     resolver: zodResolver(changePasswordSchema),
@@ -74,6 +162,22 @@ export function PasswordCard({
       confirmPassword: "",
     },
   });
+
+  const changeNewPasswordValue = useWatch({
+    control: changePasswordForm.control,
+    name: "newPassword",
+  });
+  const setNewPasswordValue = useWatch({
+    control: setPasswordForm.control,
+    name: "newPassword",
+  });
+
+  function toggleVisibility(field: keyof PasswordFieldVisibilityState) {
+    setVisibility((previous) => ({
+      ...previous,
+      [field]: !previous[field],
+    }));
+  }
 
   async function handleChangePassword(
     values: z.infer<typeof changePasswordSchema>,
@@ -110,7 +214,10 @@ export function PasswordCard({
   return (
     <Card id="password-card">
       <CardHeader>
-        <CardTitle>{hasPassword ? "Senha" : "Definir Senha"}</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <KeyRound className="size-4" />
+          {hasPassword ? "Senha" : "Definir Senha"}
+        </CardTitle>
         <CardDescription>
           {hasPassword
             ? "Altere sua senha atual."
@@ -134,7 +241,12 @@ export function PasswordCard({
                     <FormItem>
                       <FormLabel>Senha Atual</FormLabel>
                       <FormControl>
-                        <Input type="password" autoComplete="current-password" {...field} />
+                        <PasswordInputWithToggle
+                          {...field}
+                          autoComplete="current-password"
+                          isVisible={visibility.currentPassword}
+                          onToggle={() => toggleVisibility("currentPassword")}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -148,8 +260,14 @@ export function PasswordCard({
                     <FormItem>
                       <FormLabel>Nova Senha</FormLabel>
                       <FormControl>
-                        <Input type="password" autoComplete="new-password" {...field} />
+                        <PasswordInputWithToggle
+                          {...field}
+                          autoComplete="new-password"
+                          isVisible={visibility.changeNewPassword}
+                          onToggle={() => toggleVisibility("changeNewPassword")}
+                        />
                       </FormControl>
+                      <PasswordStrengthHint password={changeNewPasswordValue ?? ""} />
                       <FormMessage />
                     </FormItem>
                   )}
@@ -177,8 +295,14 @@ export function PasswordCard({
                     <FormItem>
                       <FormLabel>Nova Senha</FormLabel>
                       <FormControl>
-                        <Input type="password" autoComplete="new-password" {...field} />
+                        <PasswordInputWithToggle
+                          {...field}
+                          autoComplete="new-password"
+                          isVisible={visibility.setNewPassword}
+                          onToggle={() => toggleVisibility("setNewPassword")}
+                        />
                       </FormControl>
+                      <PasswordStrengthHint password={setNewPasswordValue ?? ""} />
                       <FormMessage />
                     </FormItem>
                   )}
@@ -191,7 +315,12 @@ export function PasswordCard({
                     <FormItem>
                       <FormLabel>Confirmar Senha</FormLabel>
                       <FormControl>
-                        <Input type="password" autoComplete="new-password" {...field} />
+                        <PasswordInputWithToggle
+                          {...field}
+                          autoComplete="new-password"
+                          isVisible={visibility.confirmPassword}
+                          onToggle={() => toggleVisibility("confirmPassword")}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

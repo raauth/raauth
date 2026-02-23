@@ -12,6 +12,7 @@ import type {
 } from "@/lib/account-security";
 import {
   CalendarDays,
+  CircleUserRound,
   KeyRound,
   Mail,
   ShieldCheck,
@@ -70,7 +71,10 @@ export function AccountOverviewCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Dados da Conta</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <CircleUserRound className="size-4" />
+          Dados da Conta
+        </CardTitle>
         <CardDescription>
           Visão rápida das configurações e dados principais da sua conta.
         </CardDescription>

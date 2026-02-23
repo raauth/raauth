@@ -51,6 +51,11 @@ export default async function AccountSettingsPage() {
 
       <div className="grid gap-6 lg:grid-cols-12">
         <section className="space-y-6 lg:col-span-5">
+          <AccountOverviewCard
+            user={currentUser}
+            security={accountSecurity}
+            authInsights={authInsights}
+          />
           <ProfileCard user={currentUser} />
           <EmailCard user={currentUser} />
           <SocialLoginsCard
@@ -58,11 +63,6 @@ export default async function AccountSettingsPage() {
             primaryProvider={authInsights.primaryProvider}
             createdWithSocialLogin={authInsights.createdWithSocialLogin}
             hasPassword={authInsights.hasPassword}
-          />
-          <AccountOverviewCard
-            user={currentUser}
-            security={accountSecurity}
-            authInsights={authInsights}
           />
         </section>
 

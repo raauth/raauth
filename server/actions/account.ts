@@ -193,9 +193,11 @@ export async function checkUsernameAvailabilityAction(input: {
 
 export async function updateProfileAction(input: {
   name: string;
+  image?: string;
   username?: string;
 }): Promise<ActionResult<{ status: boolean }>> {
   const name = input.name.trim();
+  const image = input.image?.trim();
   const normalizedUsername = normalizeUsername(input.username ?? "");
 
   if (!name) {
@@ -220,10 +222,24 @@ export async function updateProfileAction(input: {
     }
   }
 
+  if (image) {
+    try {
+      new URL(image);
+    } catch {
+      return {
+        data: null,
+        error: {
+          code: "INVALID_IMAGE_URL",
+        },
+      };
+    }
+  }
+
   try {
     const data = await auth.api.updateUser({
       body: {
         name,
+        image,
         username: normalizedUsername || undefined,
       },
       headers: await headers(),

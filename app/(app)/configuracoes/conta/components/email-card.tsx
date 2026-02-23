@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { Mail } from "lucide-react";
 
 import { changeEmailAction } from "@/server/actions/account";
 import { getErrorMessage } from "@/lib/errors";
@@ -78,7 +79,10 @@ export function EmailCard({ user }: { user: EmailCardUser }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>E-mail</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <Mail className="size-4" />
+          E-mail
+        </CardTitle>
         <CardDescription>
           Atualize o e-mail principal. A troca só é concluída após confirmar o
           link no novo endereço.
