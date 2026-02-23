@@ -26,6 +26,8 @@ import { QRCodeSVG } from "qrcode.react";
 import {
   disableTwoFactorAction,
   enableTwoFactorAction,
+  getTwoFactorRecoveryCodesAction,
+  regenerateTwoFactorRecoveryCodesAction,
 } from "@/server/actions/account";
 
 type MfaUser = {
@@ -84,7 +86,10 @@ export function MfaCard({
   const [isPending, setIsPending] = useState(false);
   const [totpURI, setTotpURI] = useState<string | null>(null);
   const [backupCodes, setBackupCodes] = useState<string[]>([]);
+  const [recoveryCodes, setRecoveryCodes] = useState<string[]>([]);
+  const [isRecoveryPending, setIsRecoveryPending] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [copiedRecoveryCodes, setCopiedRecoveryCodes] = useState(false);
 
   const isEnabled = user?.twoFactorEnabled;
   const socialProvidersLabel = formatSocialProviders(socialProviders);
@@ -134,6 +139,52 @@ export function MfaCard({
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const copyRecoveryCodes = () => {
+    navigator.clipboard.writeText(recoveryCodes.join("\n"));
+    setCopiedRecoveryCodes(true);
+    setTimeout(() => setCopiedRecoveryCodes(false), 2000);
+  };
+
+  async function handleLoadRecoveryCodes() {
+    if (!password) {
+      toast.error("Digite sua senha atual para exibir os códigos.");
+      return;
+    }
+
+    setIsRecoveryPending(true);
+    const { data, error } = await getTwoFactorRecoveryCodesAction({ password });
+    setIsRecoveryPending(false);
+
+    if (error || !data) {
+      toast.error(getErrorMessage(error?.code || "UNKNOWN_ERROR"));
+      return;
+    }
+
+    setRecoveryCodes(data.backupCodes);
+    toast.success("Códigos de recuperação carregados.");
+  }
+
+  async function handleRegenerateRecoveryCodes() {
+    if (!password) {
+      toast.error("Digite sua senha atual para regenerar os códigos.");
+      return;
+    }
+
+    setIsRecoveryPending(true);
+    const { data, error } = await regenerateTwoFactorRecoveryCodesAction({
+      password,
+    });
+    setIsRecoveryPending(false);
+
+    if (error || !data) {
+      toast.error(getErrorMessage(error?.code || "UNKNOWN_ERROR"));
+      return;
+    }
+
+    setRecoveryCodes(data.backupCodes);
+    toast.success("Novos códigos de recuperação gerados.");
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -178,6 +229,60 @@ export function MfaCard({
                   {isPending ? <Spinner /> : "Desativar MFA"}
                 </Button>
               </div>
+            </div>
+
+            <div className="rounded-md border bg-muted/30 p-4 space-y-3">
+              <p className="font-medium">Códigos de recuperação</p>
+              <p className="text-sm text-muted-foreground">
+                Use esses códigos para recuperar o acesso caso perca o
+                autenticador.
+              </p>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleLoadRecoveryCodes}
+                  disabled={isRecoveryPending || !password}
+                >
+                  {isRecoveryPending ? <Spinner /> : "Exibir códigos"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleRegenerateRecoveryCodes}
+                  disabled={isRecoveryPending || !password}
+                >
+                  {isRecoveryPending ? <Spinner /> : "Regenerar códigos"}
+                </Button>
+                {recoveryCodes.length > 0 && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={copyRecoveryCodes}
+                  >
+                    {copiedRecoveryCodes ? (
+                      <Check className="mr-1 size-4" />
+                    ) : (
+                      <Copy className="mr-1 size-4" />
+                    )}
+                    {copiedRecoveryCodes ? "Copiado" : "Copiar"}
+                  </Button>
+                )}
+              </div>
+
+              {recoveryCodes.length > 0 && (
+                <div className="rounded-md border bg-background p-3 font-mono text-sm grid grid-cols-2 gap-2">
+                  {recoveryCodes.map((code, index) => (
+                    <span key={`${code}-${index}`} className="tracking-widest">
+                      {code}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         ) : requiresCredential ? (

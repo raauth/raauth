@@ -23,7 +23,11 @@ import { authClient } from "@/lib/auth-client";
 
 // Tipo que garante que só usamos códigos de erro que o
 // Better Auth realmente retorna. Previne erros de digitação.
-type CustomErrorCode = "PASSWORD_ALREADY_DEFINED" | "INVALID_IMAGE_URL";
+type CustomErrorCode =
+	| "PASSWORD_ALREADY_DEFINED"
+	| "INVALID_IMAGE_URL"
+	| "UNAUTHORIZED"
+	| "RECOVERY_CODES_UNAVAILABLE";
 
 type ErrorTypes = Partial<
 	Record<
@@ -79,11 +83,20 @@ const errorCodes = {
 	CREDENTIAL_ACCOUNT_NOT_FOUND: {
 		pt_br: "Esta conta ainda não possui senha definida.",
 	},
+	TWO_FACTOR_NOT_ENABLED: {
+		pt_br: "Ative a autenticação em duas etapas para usar códigos de recuperação.",
+	},
+	UNAUTHORIZED: {
+		pt_br: "Sua sessão expirou. Faça login novamente.",
+	},
 	PASSWORD_ALREADY_DEFINED: {
 		pt_br: "Esta conta já possui senha definida.",
 	},
 	INVALID_IMAGE_URL: {
 		pt_br: "A URL da foto de perfil é inválida.",
+	},
+	RECOVERY_CODES_UNAVAILABLE: {
+		pt_br: "Não foi possível recuperar os códigos agora. Tente gerar novos códigos.",
 	},
 } satisfies ErrorTypes;
 

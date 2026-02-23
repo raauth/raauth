@@ -59,6 +59,7 @@ const setPasswordSchema = z
 type PasswordCardProps = {
   hasPassword: boolean;
   createdWithSocialLogin: boolean;
+  lastPasswordChangedAt?: Date | string | null;
 };
 
 type PasswordFieldVisibilityState = {
@@ -147,6 +148,7 @@ function PasswordStrengthHint({
 export function PasswordCard({
   hasPassword,
   createdWithSocialLogin,
+  lastPasswordChangedAt,
 }: PasswordCardProps) {
   const [isPending, setIsPending] = useState(false);
   const [visibility, setVisibility] = useState<PasswordFieldVisibilityState>({
@@ -202,6 +204,29 @@ export function PasswordCard({
     }, 450);
   }
 
+  const formattedLastPasswordChange = useMemo(() => {
+    if (!lastPasswordChangedAt) {
+      return null;
+    }
+
+    const parsed =
+      lastPasswordChangedAt instanceof Date
+        ? lastPasswordChangedAt
+        : new Date(lastPasswordChangedAt);
+
+    if (Number.isNaN(parsed.getTime())) {
+      return null;
+    }
+
+    return new Intl.DateTimeFormat("pt-BR", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(parsed);
+  }, [lastPasswordChangedAt]);
+
   async function handleChangePassword(
     values: z.infer<typeof changePasswordSchema>,
   ) {
@@ -250,6 +275,13 @@ export function PasswordCard({
               ? "Sua conta foi criada com login social. Defina uma senha para habilitar login por e-mail/senha e gerenciar recursos que exigem credencial."
               : "Defina uma senha para sua conta."}
         </CardDescription>
+        <p className="text-xs text-muted-foreground">
+          {hasPassword
+            ? formattedLastPasswordChange
+              ? `Última troca de senha: ${formattedLastPasswordChange}`
+              : "Última troca de senha: não registrada."
+            : "Senha local ainda não definida."}
+        </p>
       </CardHeader>
       <CardContent>
         {hasPassword ? (

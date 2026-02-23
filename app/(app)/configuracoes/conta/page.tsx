@@ -12,20 +12,37 @@ import { DangerZoneCard } from "./components/danger-zone-card";
 import { AccountOverviewCard } from "./components/account-overview-card";
 import { EmailCard } from "./components/email-card";
 import { SocialLoginsCard } from "./components/social-logins-card";
+import { RecoveryMethodsCard } from "./components/recovery-methods-card";
+import { ActiveSessionsCard } from "./components/active-sessions-card";
+import { SecurityAlertsCard } from "./components/security-alerts-card";
 
 export default async function AccountSettingsPage() {
-  const { currentUser } = await getCurrentUser();
-  const [accounts, passkeysCount] = await Promise.all([
+  const { currentUser, session } = await getCurrentUser();
+  const [accounts, passkeysCount, sessions] = await Promise.all([
     db.account.findMany({
       where: { userId: currentUser.id },
       select: {
         providerId: true,
         createdAt: true,
+        updatedAt: true,
         password: true,
       },
     }),
     db.passkey.count({
       where: { userId: currentUser.id },
+    }),
+    db.session.findMany({
+      where: { userId: currentUser.id },
+      orderBy: { updatedAt: "desc" },
+      select: {
+        id: true,
+        token: true,
+        createdAt: true,
+        updatedAt: true,
+        expiresAt: true,
+        ipAddress: true,
+        userAgent: true,
+      },
     }),
   ]);
 
@@ -37,6 +54,23 @@ export default async function AccountSettingsPage() {
     hasPasskeys: authInsights.passkeysCount > 0,
     hasSocialLogin: authInsights.hasSocialLogin,
   });
+  const currentSessionToken = session?.token ?? null;
+  const lastPasswordChangedAt =
+    accounts.find(
+      (account) =>
+        account.providerId === "credential" &&
+        typeof account.password === "string" &&
+        account.password.length > 0,
+    )?.updatedAt ?? null;
+  const normalizedSessions = sessions.map((activeSession) => ({
+    id: activeSession.id,
+    token: activeSession.token,
+    createdAt: activeSession.createdAt.toISOString(),
+    updatedAt: activeSession.updatedAt.toISOString(),
+    expiresAt: activeSession.expiresAt.toISOString(),
+    ipAddress: activeSession.ipAddress ?? null,
+    userAgent: activeSession.userAgent ?? null,
+  }));
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6 pb-12">
@@ -58,6 +92,14 @@ export default async function AccountSettingsPage() {
           />
           <ProfileCard user={currentUser} />
           <EmailCard user={currentUser} />
+          <RecoveryMethodsCard
+            emailVerified={Boolean(currentUser.emailVerified)}
+            hasPassword={authInsights.hasPassword}
+            hasSocialLogin={authInsights.hasSocialLogin}
+            hasPasskeys={authInsights.passkeysCount > 0}
+            twoFactorEnabled={Boolean(currentUser.twoFactorEnabled)}
+          />
+          <SecurityAlertsCard userId={currentUser.id} />
           <SocialLoginsCard
             socialProviders={authInsights.socialProviders}
             primaryProvider={authInsights.primaryProvider}
@@ -67,9 +109,14 @@ export default async function AccountSettingsPage() {
         </section>
 
         <section className="space-y-6 lg:col-span-7">
+          <ActiveSessionsCard
+            initialSessions={normalizedSessions}
+            currentSessionToken={currentSessionToken}
+          />
           <PasswordCard
             hasPassword={authInsights.hasPassword}
             createdWithSocialLogin={authInsights.createdWithSocialLogin}
+            lastPasswordChangedAt={lastPasswordChangedAt}
           />
           <PasskeysCard />
           <MfaCard

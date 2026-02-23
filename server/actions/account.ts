@@ -3,7 +3,9 @@
 import { headers } from "next/headers";
 
 import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
 import { normalizeUsername, validateUsername } from "@/lib/username-availability";
+import { symmetricDecrypt, verifyPassword } from "better-auth/crypto";
 
 type ActionError = {
   code: string;
@@ -153,6 +155,88 @@ function fail<T>(error: unknown): ActionResult<T> {
     data: null,
     error: mapActionError(error),
   };
+}
+
+function parseDateToISO(value: Date | string | null | undefined): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const parsed = value instanceof Date ? value : new Date(value);
+
+  if (Number.isNaN(parsed.getTime())) {
+    return null;
+  }
+
+  return parsed.toISOString();
+}
+
+function parseBackupCodes(value: string): string[] | null {
+  try {
+    const parsed = JSON.parse(value);
+
+    if (!Array.isArray(parsed)) {
+      return null;
+    }
+
+    const normalized = parsed.filter(
+      (code): code is string =>
+        typeof code === "string" && code.trim().length > 0,
+    );
+
+    return normalized.length > 0 ? normalized : null;
+  } catch {
+    return null;
+  }
+}
+
+async function resolveCredentialAccount(userId: string) {
+  return db.account.findFirst({
+    where: {
+      userId,
+      providerId: "credential",
+    },
+    select: {
+      password: true,
+    },
+  });
+}
+
+async function getAuthenticatedUserId(): Promise<string> {
+  const currentSession = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  const userId = currentSession?.user?.id;
+
+  if (!userId) {
+    throw {
+      code: "UNAUTHORIZED",
+    };
+  }
+
+  return userId;
+}
+
+async function assertPasswordForSensitiveAction(userId: string, password: string) {
+  const credentialAccount = await resolveCredentialAccount(userId);
+
+  if (!credentialAccount?.password) {
+    throw {
+      code: "CREDENTIAL_ACCOUNT_NOT_FOUND",
+    };
+  }
+
+  const valid = await verifyPassword({
+    hash: credentialAccount.password,
+    password,
+  });
+
+  if (!valid) {
+    throw {
+      code: "INVALID_PASSWORD",
+    };
+  }
 }
 
 export async function checkUsernameAvailabilityAction(input: {
@@ -436,6 +520,196 @@ export async function deletePasskeyAction(input: {
     });
 
     return ok(data);
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+export async function listActiveSessionsAction(): Promise<
+  ActionResult<{
+    currentSessionToken: string | null;
+    sessions: Array<{
+      id: string;
+      token: string;
+      createdAt: string | null;
+      updatedAt: string | null;
+      expiresAt: string | null;
+      ipAddress: string | null;
+      userAgent: string | null;
+    }>;
+  }>
+> {
+  try {
+    const currentSession = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!currentSession?.user?.id) {
+      return {
+        data: null,
+        error: {
+          code: "UNAUTHORIZED",
+        },
+      };
+    }
+
+    const sessions = await auth.api.listSessions({
+      headers: await headers(),
+    });
+
+    const normalizedSessions = [...sessions]
+      .sort((a, b) => {
+        const left = new Date(b.updatedAt ?? b.createdAt ?? 0).getTime();
+        const right = new Date(a.updatedAt ?? a.createdAt ?? 0).getTime();
+
+        return left - right;
+      })
+      .map((session) => ({
+        id: session.id,
+        token: session.token,
+        createdAt: parseDateToISO(session.createdAt),
+        updatedAt: parseDateToISO(session.updatedAt),
+        expiresAt: parseDateToISO(session.expiresAt),
+        ipAddress: session.ipAddress ?? null,
+        userAgent: session.userAgent ?? null,
+      }));
+
+    return ok({
+      currentSessionToken: currentSession.session?.token ?? null,
+      sessions: normalizedSessions,
+    });
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+export async function revokeSessionAction(input: {
+  token: string;
+}): Promise<ActionResult<{ status: boolean }>> {
+  try {
+    const data = await auth.api.revokeSession({
+      body: {
+        token: input.token,
+      },
+      headers: await headers(),
+    });
+
+    return ok(data);
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+export async function revokeOtherSessionsAction(): Promise<
+  ActionResult<{ status: boolean }>
+> {
+  try {
+    const data = await auth.api.revokeOtherSessions({
+      headers: await headers(),
+    });
+
+    return ok(data);
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+export async function getTwoFactorRecoveryCodesAction(input: {
+  password: string;
+}): Promise<ActionResult<{ backupCodes: string[] }>> {
+  const password = input.password.trim();
+
+  if (!password) {
+    return {
+      data: null,
+      error: {
+        code: "INVALID_PASSWORD",
+      },
+    };
+  }
+
+  try {
+    const userId = await getAuthenticatedUserId();
+    await assertPasswordForSensitiveAction(userId, password);
+
+    const twoFactorData = await db.twoFactor.findFirst({
+      where: {
+        userId,
+      },
+      select: {
+        backupCodes: true,
+      },
+    });
+
+    if (!twoFactorData?.backupCodes) {
+      return {
+        data: null,
+        error: {
+          code: "TWO_FACTOR_NOT_ENABLED",
+        },
+      };
+    }
+
+    const secret =
+      process.env.BETTER_AUTH_SECRET || process.env.AUTH_SECRET || "";
+
+    if (!secret) {
+      return {
+        data: null,
+        error: {
+          code: "RECOVERY_CODES_UNAVAILABLE",
+        },
+      };
+    }
+
+    let decryptedBackupCodesPayload: string | null = null;
+
+    try {
+      decryptedBackupCodesPayload = await symmetricDecrypt({
+        key: secret,
+        data: twoFactorData.backupCodes,
+      });
+    } catch {
+      decryptedBackupCodesPayload = null;
+    }
+
+    const backupCodes =
+      parseBackupCodes(twoFactorData.backupCodes) ||
+      (decryptedBackupCodesPayload
+        ? parseBackupCodes(decryptedBackupCodesPayload)
+        : null);
+
+    if (!backupCodes) {
+      return {
+        data: null,
+        error: {
+          code: "RECOVERY_CODES_UNAVAILABLE",
+        },
+      };
+    }
+
+    return ok({
+      backupCodes,
+    });
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+export async function regenerateTwoFactorRecoveryCodesAction(input: {
+  password: string;
+}): Promise<ActionResult<{ backupCodes: string[] }>> {
+  try {
+    const data = await auth.api.generateBackupCodes({
+      body: {
+        password: input.password,
+      },
+      headers: await headers(),
+    });
+
+    return ok({
+      backupCodes: data.backupCodes,
+    });
   } catch (error) {
     return fail(error);
   }
