@@ -10,11 +10,13 @@ import type {
   AccountAuthInsights,
   AccountSecurityState,
 } from "@/lib/account-security";
+import { cn } from "@/lib/utils";
 import {
   CalendarDays,
   CircleUserRound,
   KeyRound,
   Mail,
+  Shield,
   ShieldCheck,
   ShieldX,
   UserRound,
@@ -59,6 +61,22 @@ function getSecurityBadgeVariant(label: AccountSecurityState["label"]) {
   return "destructive" as const;
 }
 
+function getSecurityBadgeClassName(label: AccountSecurityState["label"]) {
+  if (label === "Muito alto") {
+    return "border-emerald-500/30 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300";
+  }
+
+  if (label === "Alto") {
+    return "border-lime-500/30 bg-lime-500/15 text-lime-700 dark:text-lime-300";
+  }
+
+  if (label === "Médio") {
+    return "border-amber-500/30 bg-amber-500/15 text-amber-700 dark:text-amber-300";
+  }
+
+  return "border-red-500/30 bg-red-500/15 text-red-700 dark:text-red-300";
+}
+
 export function AccountOverviewCard({
   user,
   security,
@@ -85,7 +103,14 @@ export function AccountOverviewCard({
             <Mail className="size-4 text-muted-foreground" />
             {user.email || "Sem e-mail"}
           </p>
-          <Badge variant={user.emailVerified ? "secondary" : "outline"}>
+          <Badge
+            variant={user.emailVerified ? "secondary" : "outline"}
+            className={
+              user.emailVerified
+                ? "border-emerald-500/30 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
+                : "border-amber-500/30 bg-amber-500/15 text-amber-700 dark:text-amber-300"
+            }
+          >
             {user.emailVerified ? "E-mail verificado" : "E-mail pendente"}
           </Badge>
         </div>
@@ -112,10 +137,21 @@ export function AccountOverviewCard({
 
         <div className="rounded-lg border p-3 flex items-center justify-between">
           <div>
-            <p className="text-muted-foreground">Autenticação em duas etapas</p>
-            <p className="font-medium">
-              {user.twoFactorEnabled ? "Ativada" : "Desativada"}
+            <p className="text-muted-foreground flex items-center gap-2">
+              <Shield className="size-4" />
+              Autenticação em duas etapas
             </p>
+            <Badge
+              variant={user.twoFactorEnabled ? "secondary" : "outline"}
+              className={cn(
+                "mt-1",
+                user.twoFactorEnabled
+                  ? "border-emerald-500/30 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
+                  : "border-amber-500/30 bg-amber-500/15 text-amber-700 dark:text-amber-300",
+              )}
+            >
+              {user.twoFactorEnabled ? "Ativada" : "Desativada"}
+            </Badge>
           </div>
           {user.twoFactorEnabled ? (
             <ShieldCheck className="size-5 text-emerald-600 dark:text-emerald-400" />
@@ -130,7 +166,10 @@ export function AccountOverviewCard({
               <KeyRound className="size-4" />
               Nível de segurança
             </p>
-            <Badge variant={getSecurityBadgeVariant(security.label)}>
+            <Badge
+              variant={getSecurityBadgeVariant(security.label)}
+              className={getSecurityBadgeClassName(security.label)}
+            >
               {security.label}
             </Badge>
           </div>
