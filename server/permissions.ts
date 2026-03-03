@@ -55,8 +55,8 @@ import {
 // Para adicionar permissões customizadas, estenda este objeto.
 const statement = {
   ...defaultStatements,
-  // 💡 Adicione suas permissões customizadas aqui:
-  // report: ["read", "create", "delete"] as const,
+  // Permissões do editor de organogramas.
+  orgChart: ["read", "update"] as const,
 } as const;
 
 // Cria a instância do Access Control com nossos statements.
@@ -69,7 +69,8 @@ const ac = createAccessControl(statement);
 // Não pode: editar, deletar, convidar
 const member = ac.newRole({
   ...memberAc.statements,
-  // 💡 Adicione permissões extras para member aqui
+  // Membros podem visualizar, mas não editar.
+  orgChart: ["read"],
 });
 
 // ADMIN (Administrador): gerencia a organização
@@ -78,7 +79,7 @@ const member = ac.newRole({
 // Não pode: deletar a organização
 const admin = ac.newRole({
   ...adminAc.statements,
-  // 💡 Adicione permissões extras para admin aqui
+  orgChart: ["read", "update"],
 });
 
 // OWNER (Dono): acesso total
@@ -86,7 +87,7 @@ const admin = ac.newRole({
 // É o role atribuído automaticamente ao criador da org
 const owner = ac.newRole({
   ...ownerAc.statements,
-  // 💡 Adicione permissões extras para owner aqui
+  orgChart: ["read", "update"],
 });
 
 export { ac, owner, admin, member };

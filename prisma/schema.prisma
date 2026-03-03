@@ -56,10 +56,11 @@ model User {
   accounts Account[]
 
   // Relações com organizações: membros e convites
-  members     Member[]
-  invitations Invitation[]
-  twoFactors  TwoFactor[]
-  passkeys    Passkey[]
+  members                   Member[]
+  invitations               Invitation[]
+  twoFactors                TwoFactor[]
+  passkeys                  Passkey[]
+  createdOrganizationCharts OrganizationChart[] @relation("OrganizationChartCreator")
 
   // Novos campos adicionados pelos plugins do Better Auth
   username         String? @unique
@@ -180,7 +181,7 @@ model Verification {
 // extras aqui para o seu caso de uso específico.
 // ============================================================
 model Organization {
-  id              String       @id
+  id              String              @id
   name            String
   slug            String
   logo            String?
@@ -188,7 +189,8 @@ model Organization {
   metadata        String?
   members         Member[]
   invitations     Invitation[]
-  lastActiveUsers User[]       @relation("LastActiveOrganization")
+  lastActiveUsers User[]              @relation("LastActiveOrganization")
+  charts          OrganizationChart[]
 
   // 💡 PONTO DE EXTENSÃO: adicione relações com seus models
   // personalizados aqui. Ex: projetos, documentos, etc.
@@ -281,20 +283,97 @@ model TwoFactor {
 // biométricas ou hardware keys baseadas em WebAuthn.
 // ============================================================
 model Passkey {
-  id             String    @id
-  name           String?
-  publicKey      String
-  userId         String
-  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  credentialID   String
-  counter        Int
-  deviceType     String
-  backedUp       Boolean
-  transports     String?
-  aaguid         String?
-  createdAt      DateTime? @default(now())
+  id           String    @id
+  name         String?
+  publicKey    String
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  credentialID String
+  counter      Int
+  deviceType   String
+  backedUp     Boolean
+  transports   String?
+  aaguid       String?
+  createdAt    DateTime? @default(now())
 
   @@index([credentialID])
   @@index([userId])
   @@map("passkey")
+}
+
+// ============================================================
+// 🧩 ORGANOGRAMA (OrganizationChart)
+// ============================================================
+// Cada registro representa uma "página" de organograma para
+// uma combinação de organização + cidade + setor.
+// ============================================================
+model OrganizationChart {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdById    String
+  createdBy      User         @relation("OrganizationChartCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  city           String
+  citySlug       String
+  sector         String
+  sectorSlug     String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  nodes OrganizationChartNode[]
+  edges OrganizationChartEdge[]
+
+  @@unique([organizationId, citySlug, sectorSlug])
+  @@index([organizationId, citySlug, sectorSlug])
+  @@map("organization_chart")
+}
+
+// ============================================================
+// 🔷 NÓS DO ORGANOGRAMA (OrganizationChartNode)
+// ============================================================
+// Persistimos os nodes do React Flow para cada página.
+// ============================================================
+model OrganizationChartNode {
+  id        String            @id @default(cuid())
+  chartId   String
+  chart     OrganizationChart @relation(fields: [chartId], references: [id], onDelete: Cascade)
+  nodeId    String
+  type      String?
+  positionX Float
+  positionY Float
+  data      Json
+  width     Float?
+  height    Float?
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  @@unique([chartId, nodeId])
+  @@index([chartId])
+  @@map("organization_chart_node")
+}
+
+// ============================================================
+// 🔗 CONEXÕES DO ORGANOGRAMA (OrganizationChartEdge)
+// ============================================================
+// Persistimos as arestas do React Flow para cada página.
+// ============================================================
+model OrganizationChartEdge {
+  id           String            @id @default(cuid())
+  chartId      String
+  chart        OrganizationChart @relation(fields: [chartId], references: [id], onDelete: Cascade)
+  edgeId       String
+  source       String
+  target       String
+  sourceHandle String?
+  targetHandle String?
+  type         String?
+  label        String?
+  animated     Boolean           @default(false)
+  data         Json?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  @@unique([chartId, edgeId])
+  @@index([chartId])
+  @@map("organization_chart_edge")
 }

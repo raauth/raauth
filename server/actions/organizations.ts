@@ -36,9 +36,16 @@ import { getCurrentUser } from "@/server/actions/session";
 // ============================================================
 export async function getOrganizationBySlug(slug: string) {
   try {
-    const organizationBySlug = await db.organization.findUnique({
+    const { currentUser } = await getCurrentUser();
+
+    const organizationBySlug = await db.organization.findFirst({
       where: {
         slug: slug,
+        members: {
+          some: {
+            userId: currentUser.id,
+          },
+        },
       },
       // "include" faz um JOIN: traz os membros E os dados
       // do usuário de cada membro em uma única consulta

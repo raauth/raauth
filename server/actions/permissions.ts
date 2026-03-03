@@ -31,6 +31,32 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 
+async function checkPermission(permissions: Record<string, string[]>) {
+  try {
+    const { success, error } = await auth.api.hasPermission({
+      headers: await headers(),
+      body: {
+        permissions,
+      },
+    });
+
+    if (error) {
+      return {
+        success: false as const,
+        error:
+          error || "Você não tem permissão para realizar esta ação",
+      };
+    }
+
+    return { success: success === true };
+  } catch (error) {
+    return {
+      success: false as const,
+      error: error || "Você não tem permissão para realizar esta ação",
+    };
+  }
+}
+
 // ============================================================
 // 🔒 isAdmin
 // ============================================================
@@ -46,31 +72,19 @@ import { headers } from "next/headers";
 // 3. Se o role do usuário na org tem as permissões pedidas
 // ============================================================
 export const isAdmin = async () => {
-  try {
-    const { success, error } = await auth.api.hasPermission({
-      headers: await headers(),
-      body: {
-        permission: {
-          // Pede permissão de "update" e "delete" na organização.
-          // Apenas admin e owner têm essas permissões nos
-          // statements padrão do Better Auth.
-          organization: ["update", "delete"],
-        },
-      },
-    });
+  return checkPermission({
+    organization: ["update", "delete"],
+  });
+};
 
-    if (error) {
-      return {
-        success: false,
-        error: error || "Você não tem permissão para realizar esta ação",
-      };
-    }
+export const canViewOrganizationChart = async () => {
+  return checkPermission({
+    orgChart: ["read"],
+  });
+};
 
-    return success;
-  } catch (error) {
-    return {
-      success: false,
-      error: error || "Você não tem permissão para realizar esta ação",
-    };
-  }
+export const canEditOrganizationChart = async () => {
+  return checkPermission({
+    orgChart: ["update"],
+  });
 };
