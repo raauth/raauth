@@ -1,0 +1,58 @@
+import { notFound } from "next/navigation";
+
+import { OrgChartEditor } from "@/components/organization/org-chart-editor";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { getOrgChartPageData } from "@/server/actions/org-chart";
+
+type Params = Promise<{
+  slug: string;
+  city: string;
+  sector: string;
+}>;
+
+export default async function OrganizationChartPage({
+  params,
+}: {
+  params: Params;
+}) {
+  const { slug, city, sector } = await params;
+  const pageData = await getOrgChartPageData({
+    organizationSlug: slug,
+    citySlug: city,
+    sectorSlug: sector,
+  });
+
+  if (!pageData) {
+    notFound();
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      <Card>
+        <CardHeader className="gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="secondary">{pageData.chart.city}</Badge>
+            <Badge variant="outline">{pageData.chart.sector}</Badge>
+            <Badge variant={pageData.canEdit ? "default" : "outline"}>
+              {pageData.canEdit ? "Editor" : "Visualizador"}
+            </Badge>
+          </div>
+          <CardTitle>Organograma</CardTitle>
+          <CardDescription>
+            Estrutura da organizacao para {pageData.chart.city} / {pageData.chart.sector}.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <OrgChartEditor
+            organizationSlug={pageData.organization.slug}
+            chartId={pageData.chart.id}
+            canEdit={pageData.canEdit}
+            initialNodes={pageData.nodes}
+            initialEdges={pageData.edges}
+          />
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
