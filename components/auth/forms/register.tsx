@@ -116,11 +116,13 @@ export function RegisterForm() {
     }
 
     setShowCheck(true);
-    sessionStorage.setItem("registerSuccess", "true");
-    sessionStorage.setItem("registeredEmail", extractUserEmail(data));
+    const registeredEmail = extractUserEmail(data);
+    if (registeredEmail) {
+      sessionStorage.setItem("registeredEmail", registeredEmail);
+    }
 
     setTimeout(() => {
-      router.push("/criar-conta/confirmar");
+      router.push("/entrar");
     }, 1000);
   }
 

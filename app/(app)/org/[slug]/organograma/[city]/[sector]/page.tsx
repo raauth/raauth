@@ -27,7 +27,7 @@ export default async function OrganizationChartPage({
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-3 rounded-xl border bg-card p-3">
+    <div className="flex h-full min-h-0 w-full flex-1 flex-col gap-3 rounded-xl border bg-card p-3">
       <div className="flex flex-wrap items-center gap-2">
         <Badge variant="secondary">{pageData.chart.city}</Badge>
         <Badge variant="outline">{pageData.chart.sector}</Badge>

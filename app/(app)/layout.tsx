@@ -19,5 +19,5 @@ export default async function AppLayout({
     redirect("/entrar");
   }
 
-  return <main className="h-svh overflow-auto">{children}</main>;
+  return <main className="h-svh overflow-hidden">{children}</main>;
 }

@@ -45,28 +45,31 @@ export default async function OrganizationPage({ params }: { params: Params }) {
   const users = await getAllUsers(organization.id);
 
   return (
-    <div className="flex flex-col lg:grid lg:grid-cols-5 gap-8">
-      <div className="col-span-5 flex items-center justify-between rounded-lg border bg-card p-4">
-        <p className="text-sm text-muted-foreground">
-          Esta area e dedicada ao gerenciamento de membros e configuracoes da organizacao.
-        </p>
-        <Button asChild size="sm">
-          <Link href={`/org/${organization.slug}/organograma`}>
-            Ir para organogramas
-          </Link>
-        </Button>
-      </div>
-      {/* Coluna principal (3/5 da largura): tabelas */}
-      <div className="flex flex-col gap-4 col-span-3">
-        {/* Tabela de membros da organização */}
-        <AllMembers members={organization.members || []} />
-        {/* Tabela de usuários disponíveis para adicionar */}
-        <AllUsers users={users || []} />
-      </div>
+    <div className="h-full min-h-0 w-full overflow-auto pr-1">
+      <div className="flex min-h-full flex-col gap-6 pb-4 lg:grid lg:grid-cols-5 lg:gap-8">
+        <div className="col-span-5 flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-card p-4">
+          <p className="text-sm text-muted-foreground">
+            Esta area e dedicada ao gerenciamento de membros e configuracoes da organizacao.
+          </p>
+          <Button asChild size="sm">
+            <Link href={`/org/${organization.slug}/organograma`}>
+              Ir para organogramas
+            </Link>
+          </Button>
+        </div>
 
-      {/* Coluna lateral (2/5 da largura): info card */}
-      <div className="flex flex-col gap-4 col-span-2">
-        <InfosCard organization={organization} />
+        {/* Coluna principal (3/5 da largura): tabelas */}
+        <div className="flex flex-col gap-4 col-span-3">
+          {/* Tabela de membros da organização */}
+          <AllMembers members={organization.members || []} />
+          {/* Tabela de usuários disponíveis para adicionar */}
+          <AllUsers users={users || []} />
+        </div>
+
+        {/* Coluna lateral (2/5 da largura): info card */}
+        <div className="flex flex-col gap-4 col-span-2">
+          <InfosCard organization={organization} />
+        </div>
       </div>
     </div>
   );
