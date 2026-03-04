@@ -5,14 +5,17 @@ import { type User } from "@/prisma/client/client";
 import { Card } from "@/components/ui/card";
 import { DataTable } from "@/components/organization/tables/users/data-table";
 import { getUsersColumns } from "./users-columns";
-import { authClient } from "@/lib/auth-client";
 
-export function AllUsers({ users }: { users: User[] }) {
-  const { data: organization } = authClient.useActiveOrganization();
-
+export function AllUsers({
+  users,
+  organizationId,
+}: {
+  users: User[];
+  organizationId: string;
+}) {
   const columns = useMemo(() => {
-    return getUsersColumns(organization?.id || "");
-  }, [organization?.id]);
+    return getUsersColumns(organizationId);
+  }, [organizationId]);
 
   // O componente AllUsers agora é responsável apenas por 
   // fornecer os dados e as colunas para o DataTable genérico.

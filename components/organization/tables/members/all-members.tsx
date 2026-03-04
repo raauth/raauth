@@ -7,14 +7,17 @@ import { type MemberWithUser, getMembersColumns } from "./members-columns";
 
 // tipos:
 import { useMemo } from "react";
-import { authClient } from "@/lib/auth-client";
 
-export function AllMembers({ members }: { members: MemberWithUser[] }) {
-  const { data: organization } = authClient.useActiveOrganization();
-
+export function AllMembers({
+  members,
+  organizationId,
+}: {
+  members: MemberWithUser[];
+  organizationId: string;
+}) {
   const columns = useMemo(() => {
-    return getMembersColumns(organization?.id || "");
-  }, [organization?.id]);
+    return getMembersColumns(organizationId);
+  }, [organizationId]);
 
   // O componente AllUsers agora é responsável apenas por 
   // fornecer os dados e as colunas para o DataTable genérico.

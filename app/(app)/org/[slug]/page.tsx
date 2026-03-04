@@ -61,9 +61,9 @@ export default async function OrganizationPage({ params }: { params: Params }) {
         {/* Coluna principal (3/5 da largura): tabelas */}
         <div className="flex flex-col gap-4 col-span-3">
           {/* Tabela de membros da organização */}
-          <AllMembers members={organization.members || []} />
+          <AllMembers members={organization.members || []} organizationId={organization.id} />
           {/* Tabela de usuários disponíveis para adicionar */}
-          <AllUsers users={users || []} />
+          <AllUsers users={users || []} organizationId={organization.id} />
         </div>
 
         {/* Coluna lateral (2/5 da largura): info card */}
