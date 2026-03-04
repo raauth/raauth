@@ -36,6 +36,30 @@ interface CreateOrgChartSectorInput {
   sector: string;
 }
 
+interface RenameOrgChartCityInput {
+  organizationSlug: string;
+  citySlug: string;
+  city: string;
+}
+
+interface DeleteOrgChartCityInput {
+  organizationSlug: string;
+  citySlug: string;
+}
+
+interface RenameOrgChartSectorInput {
+  organizationSlug: string;
+  citySlug: string;
+  sectorSlug: string;
+  sector: string;
+}
+
+interface DeleteOrgChartSectorInput {
+  organizationSlug: string;
+  citySlug: string;
+  sectorSlug: string;
+}
+
 interface SaveOrganizationChartLayoutInput {
   organizationSlug: string;
   chartId: string;
@@ -174,6 +198,35 @@ async function createChart({
   });
 
   return chart;
+}
+
+async function getFirstAvailableOrgChartPath({
+  organizationId,
+  organizationSlug,
+}: {
+  organizationId: string;
+  organizationSlug: string;
+}) {
+  const firstChart = await db.organizationChart.findFirst({
+    where: {
+      organizationId,
+    },
+    select: {
+      citySlug: true,
+      sectorSlug: true,
+    },
+    orderBy: [{ city: "asc" }, { sector: "asc" }],
+  });
+
+  if (!firstChart) {
+    return `/org/${encodeURIComponent(organizationSlug)}/organograma`;
+  }
+
+  return buildOrgChartPath({
+    organizationSlug,
+    citySlug: firstChart.citySlug,
+    sectorSlug: firstChart.sectorSlug,
+  });
 }
 
 export async function getOrgChartSidebarData(organizationSlug: string) {
@@ -571,6 +624,291 @@ export async function createOrgChartSector({
       sectorSlug,
     }),
     alreadyExists: false as const,
+  };
+}
+
+export async function renameOrgChartCity({
+  organizationSlug,
+  citySlug,
+  city,
+}: RenameOrgChartCityInput) {
+  const context = await getOrganizationMembershipContext(organizationSlug);
+  if (!context) {
+    return { success: false as const, reason: "NOT_FOUND" as const };
+  }
+
+  if (!context.canEdit) {
+    return { success: false as const, reason: "FORBIDDEN" as const };
+  }
+
+  const normalizedCity = city.trim();
+  if (!normalizedCity) {
+    return { success: false as const, reason: "CITY_REQUIRED" as const };
+  }
+
+  const chartsInCity = await db.organizationChart.findMany({
+    where: {
+      organizationId: context.organizationId,
+      citySlug,
+    },
+    select: {
+      id: true,
+      sectorSlug: true,
+    },
+    orderBy: {
+      sector: "asc",
+    },
+  });
+
+  if (chartsInCity.length === 0) {
+    return { success: false as const, reason: "CITY_NOT_FOUND" as const };
+  }
+
+  const nextCitySlug = normalizeOrgChartSegment(normalizedCity);
+
+  if (nextCitySlug !== citySlug) {
+    const conflictingSectors = chartsInCity.map((chart) => chart.sectorSlug);
+    const conflict = await db.organizationChart.findFirst({
+      where: {
+        organizationId: context.organizationId,
+        citySlug: nextCitySlug,
+        sectorSlug: {
+          in: conflictingSectors,
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (conflict) {
+      return { success: false as const, reason: "CITY_CONFLICT" as const };
+    }
+  }
+
+  await db.organizationChart.updateMany({
+    where: {
+      organizationId: context.organizationId,
+      citySlug,
+    },
+    data: {
+      city: normalizedCity,
+      citySlug: nextCitySlug,
+    },
+  });
+
+  const firstSectorSlug = chartsInCity[0]?.sectorSlug ?? "geral";
+
+  return {
+    success: true as const,
+    city: normalizedCity,
+    citySlug: nextCitySlug,
+    path: buildOrgChartPath({
+      organizationSlug: context.organizationSlug,
+      citySlug: nextCitySlug,
+      sectorSlug: firstSectorSlug,
+    }),
+  };
+}
+
+export async function deleteOrgChartCity({
+  organizationSlug,
+  citySlug,
+}: DeleteOrgChartCityInput) {
+  const context = await getOrganizationMembershipContext(organizationSlug);
+  if (!context) {
+    return { success: false as const, reason: "NOT_FOUND" as const };
+  }
+
+  if (!context.canEdit) {
+    return { success: false as const, reason: "FORBIDDEN" as const };
+  }
+
+  const existingCityCharts = await db.organizationChart.findMany({
+    where: {
+      organizationId: context.organizationId,
+      citySlug,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (existingCityCharts.length === 0) {
+    return { success: false as const, reason: "CITY_NOT_FOUND" as const };
+  }
+
+  await db.organizationChart.deleteMany({
+    where: {
+      organizationId: context.organizationId,
+      citySlug,
+    },
+  });
+
+  const nextPath = await getFirstAvailableOrgChartPath({
+    organizationId: context.organizationId,
+    organizationSlug: context.organizationSlug,
+  });
+
+  return {
+    success: true as const,
+    deletedCount: existingCityCharts.length,
+    path: nextPath,
+  };
+}
+
+export async function renameOrgChartSector({
+  organizationSlug,
+  citySlug,
+  sectorSlug,
+  sector,
+}: RenameOrgChartSectorInput) {
+  const context = await getOrganizationMembershipContext(organizationSlug);
+  if (!context) {
+    return { success: false as const, reason: "NOT_FOUND" as const };
+  }
+
+  if (!context.canEdit) {
+    return { success: false as const, reason: "FORBIDDEN" as const };
+  }
+
+  const normalizedSector = sector.trim();
+  if (!normalizedSector) {
+    return { success: false as const, reason: "SECTOR_REQUIRED" as const };
+  }
+
+  const existingChart = await db.organizationChart.findUnique({
+    where: {
+      organizationId_citySlug_sectorSlug: {
+        organizationId: context.organizationId,
+        citySlug,
+        sectorSlug,
+      },
+    },
+    select: {
+      id: true,
+      citySlug: true,
+    },
+  });
+
+  if (!existingChart) {
+    return { success: false as const, reason: "SECTOR_NOT_FOUND" as const };
+  }
+
+  const nextSectorSlug = normalizeOrgChartSegment(normalizedSector);
+
+  if (nextSectorSlug !== sectorSlug) {
+    const conflict = await db.organizationChart.findUnique({
+      where: {
+        organizationId_citySlug_sectorSlug: {
+          organizationId: context.organizationId,
+          citySlug: existingChart.citySlug,
+          sectorSlug: nextSectorSlug,
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (conflict) {
+      return { success: false as const, reason: "SECTOR_CONFLICT" as const };
+    }
+  }
+
+  await db.organizationChart.update({
+    where: {
+      id: existingChart.id,
+    },
+    data: {
+      sector: normalizedSector,
+      sectorSlug: nextSectorSlug,
+    },
+  });
+
+  return {
+    success: true as const,
+    sector: normalizedSector,
+    sectorSlug: nextSectorSlug,
+    path: buildOrgChartPath({
+      organizationSlug: context.organizationSlug,
+      citySlug: existingChart.citySlug,
+      sectorSlug: nextSectorSlug,
+    }),
+  };
+}
+
+export async function deleteOrgChartSector({
+  organizationSlug,
+  citySlug,
+  sectorSlug,
+}: DeleteOrgChartSectorInput) {
+  const context = await getOrganizationMembershipContext(organizationSlug);
+  if (!context) {
+    return { success: false as const, reason: "NOT_FOUND" as const };
+  }
+
+  if (!context.canEdit) {
+    return { success: false as const, reason: "FORBIDDEN" as const };
+  }
+
+  const existingChart = await db.organizationChart.findUnique({
+    where: {
+      organizationId_citySlug_sectorSlug: {
+        organizationId: context.organizationId,
+        citySlug,
+        sectorSlug,
+      },
+    },
+    select: {
+      id: true,
+      citySlug: true,
+    },
+  });
+
+  if (!existingChart) {
+    return { success: false as const, reason: "SECTOR_NOT_FOUND" as const };
+  }
+
+  await db.organizationChart.delete({
+    where: {
+      id: existingChart.id,
+    },
+  });
+
+  const nextChartInCity = await db.organizationChart.findFirst({
+    where: {
+      organizationId: context.organizationId,
+      citySlug: existingChart.citySlug,
+    },
+    select: {
+      citySlug: true,
+      sectorSlug: true,
+    },
+    orderBy: {
+      sector: "asc",
+    },
+  });
+
+  if (nextChartInCity) {
+    return {
+      success: true as const,
+      path: buildOrgChartPath({
+        organizationSlug: context.organizationSlug,
+        citySlug: nextChartInCity.citySlug,
+        sectorSlug: nextChartInCity.sectorSlug,
+      }),
+    };
+  }
+
+  const nextPath = await getFirstAvailableOrgChartPath({
+    organizationId: context.organizationId,
+    organizationSlug: context.organizationSlug,
+  });
+
+  return {
+    success: true as const,
+    path: nextPath,
   };
 }
 
