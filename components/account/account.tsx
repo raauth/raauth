@@ -9,7 +9,11 @@ import { UnloggedAccount } from "@/components/account/unlogged";
 import { LoggedAccount } from "@/components/account/logged";
 import { headers } from "next/headers";
 
-export async function Account() {
+interface AccountProps {
+  organizationSlug?: string | null;
+}
+
+export async function Account({ organizationSlug }: AccountProps) {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -19,7 +23,7 @@ export async function Account() {
       {!session ? (
         <UnloggedAccount />
       ) : (
-        <LoggedAccount session={session} />
+        <LoggedAccount session={session} organizationSlug={organizationSlug} />
       )}
     </DropdownMenu>
   );

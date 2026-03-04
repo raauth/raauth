@@ -17,6 +17,7 @@ import {
 import { CircleUser, LogOut, Settings } from "lucide-react";
 
 interface LoggedAccountProps {
+  organizationSlug?: string | null;
   session?: {
     user?: {
       name?: string | null;
@@ -28,6 +29,7 @@ interface LoggedAccountProps {
 }
 
 export function LoggedAccount({
+  organizationSlug,
   session,
 }: LoggedAccountProps) {
   const router = useRouter();
@@ -65,7 +67,7 @@ export function LoggedAccount({
 
           {session?.user?.role && <AccessLevelIcon level={session.user.role} />}
 
-          <AdminPanel />
+          <AdminPanel organizationSlug={organizationSlug} />
 
           <DropdownMenuItem
             variant="destructive"

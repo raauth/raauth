@@ -30,7 +30,7 @@ export function OrgWorkspaceShell({
         groups={groups}
         sidebarChrome={
           <div className="flex items-center justify-end gap-2">
-            <Account />
+            <Account organizationSlug={organizationSlug} />
             <ThemeToggle />
           </div>
         }
