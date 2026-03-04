@@ -26,34 +26,49 @@ import { OrgChartSidebar } from "@/components/organization/org-chart-sidebar";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Badge } from "@/components/ui/badge";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { db } from "@/lib/db";
 import { getOrgChartPageData, getOrgChartSidebarData } from "@/server/actions/org-chart";
+import { getOrganizations } from "@/server/actions/organizations";
 import { getServerSession } from "@/server/actions/session";
 
 export default async function HomePage() {
   const session = await getServerSession();
 
-  if (!session?.session?.activeOrganizationId) {
-    redirect("/criar-organizacao");
+  if (!session) {
+    redirect("/entrar");
   }
 
-  const activeOrganization = await db.organization.findUnique({
-    where: {
-      id: session.session.activeOrganizationId,
-    },
-    select: {
-      slug: true,
-      name: true,
-    },
-  });
+  const { organizations, preferredActiveOrganizationId } = await getOrganizations();
+  const activeOrganization =
+    organizations.find((organization) => organization.id === preferredActiveOrganizationId) ??
+    organizations[0] ??
+    null;
 
   if (!activeOrganization) {
-    redirect("/criar-organizacao");
+    return (
+      <div className="flex h-full min-h-0 items-center justify-center p-6">
+        <div className="w-full max-w-lg rounded-xl border bg-card p-6 text-center">
+          <h1 className="text-2xl font-semibold">Sem acesso a organizacao</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Sua conta esta autenticada, mas ainda nao foi vinculada a organizacao da empresa.
+            Solicite acesso a um administrador.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   const sidebarData = await getOrgChartSidebarData(activeOrganization.slug);
   if (!sidebarData) {
-    redirect("/criar-organizacao");
+    return (
+      <div className="flex h-full min-h-0 items-center justify-center p-6">
+        <div className="w-full max-w-lg rounded-xl border bg-card p-6 text-center">
+          <h1 className="text-2xl font-semibold">Nao foi possivel carregar a organizacao</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Atualize a pagina ou tente novamente em instantes.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   const firstChart = sidebarData.groups[0]?.sectors[0];

@@ -46,7 +46,7 @@ export default function LoginPage() {
             value="credentials"
             className="space-y-4 focus-visible:outline-none"
           >
-            <div className="grid grid-cols-3 space-x-2">
+            <div className="grid grid-cols-3 gap-2">
               <MicrosoftOauthButton />
               <GoogleOauthButton />
               <GithubOauthButton />

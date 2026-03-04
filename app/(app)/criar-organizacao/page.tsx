@@ -1,11 +1,25 @@
 import { CreateOrganizationForm } from "@/components/organizations/create-organization-form";
+import { db } from "@/lib/db";
+import { redirect } from "next/navigation";
 
 export const metadata = {
   title: "Criar Organização | Raauth",
   description: "Crie uma nova organização ou workspace no Raauth",
 };
 
-export default function CreateOrganizationPage() {
+export default async function CreateOrganizationPage() {
+  const existingOrganization = await db.organization.findFirst({
+    select: {
+      id: true,
+    },
+  });
+
+  // Este projeto opera com uma organizacao universal.
+  // Depois de criada, bloqueamos o acesso a esta tela.
+  if (existingOrganization) {
+    redirect("/");
+  }
+
   return (
     <div className="flex h-full w-full items-center justify-center p-4">
       <div className="w-full max-w-md space-y-8">

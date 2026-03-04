@@ -19,6 +19,12 @@ import { CardFooter } from "@/app/(auth)/components/card-footer";
 
 // Formulário de registro (nome, sobrenome, e-mail, senha)
 import { RegisterForm } from "@/components/auth/forms/register";
+import {
+  GithubOauthButton,
+  GoogleOauthButton,
+  MicrosoftOauthButton,
+} from "@/components/auth/buttons/oauth-buttons";
+import { Or } from "@/components/auth/or";
 
 export default function RegisterPage() {
   return (
@@ -27,8 +33,18 @@ export default function RegisterPage() {
       <RaauthCardHeader />
 
       <CardContent>
-        {/* Formulário de registro */}
-        <RegisterForm />
+        <div className="space-y-4">
+          <div className="grid grid-cols-3 gap-2">
+            <MicrosoftOauthButton />
+            <GoogleOauthButton />
+            <GithubOauthButton />
+          </div>
+
+          <Or />
+
+          {/* Formulário de registro */}
+          <RegisterForm />
+        </div>
       </CardContent>
 
       {/* Rodapé: "Já tem conta? Entrar" */}
