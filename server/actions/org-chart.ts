@@ -3,6 +3,7 @@
 import type { Edge, Node } from "@xyflow/react";
 
 import { buildOrgChartPath, groupOrgChartPagesByCity, normalizeOrgChartSegment } from "@/lib/org-chart-navigation";
+import { createOrgChartNodeData, normalizeOrgChartNodeData } from "@/lib/org-chart-node";
 import { db } from "@/lib/db";
 import type { Prisma } from "@/prisma/client/client";
 import { getCurrentUser } from "@/server/actions/session";
@@ -57,28 +58,7 @@ function toInputJson(value: unknown): Prisma.InputJsonValue {
 }
 
 function toSerializableNodeData(value: unknown) {
-  if (typeof value !== "object" || value === null || Array.isArray(value)) {
-    return { label: "Nova posicao" };
-  }
-
-  const parsed = toInputJson(value);
-  if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
-    return { label: "Nova posicao" };
-  }
-
-  const parsedObject = parsed as Record<string, unknown>;
-
-  if (
-    typeof parsedObject.label !== "string" ||
-    parsedObject.label.trim() === ""
-  ) {
-    return {
-      ...parsedObject,
-      label: "Nova posicao",
-    };
-  }
-
-  return parsedObject as Record<string, unknown> & { label: string };
+  return normalizeOrgChartNodeData(value);
 }
 
 function toSerializableEdgeData(value: unknown) {
@@ -177,13 +157,16 @@ async function createChart({
             nodeId: rootNodeId,
             positionX: 0,
             positionY: 0,
-            data: {
-              label: createDefaultNodeLabel({
-                organizationName: context.organizationName,
-                sector,
+            data: toInputJson(
+              createOrgChartNodeData({
+                label: createDefaultNodeLabel({
+                  organizationName: context.organizationName,
+                  sector,
+                }),
+                name: context.organizationName,
+                role: sector,
               }),
-              description: "No inicial",
-            },
+            ),
           },
         ],
       },
@@ -239,13 +222,16 @@ export async function getOrgChartSidebarData(organizationSlug: string) {
               nodeId: `root-${Date.now()}`,
               positionX: 0,
               positionY: 0,
-              data: {
-                label: createDefaultNodeLabel({
-                  organizationName: context.organizationName,
-                  sector: defaultSector,
+              data: toInputJson(
+                createOrgChartNodeData({
+                  label: createDefaultNodeLabel({
+                    organizationName: context.organizationName,
+                    sector: defaultSector,
+                  }),
+                  name: context.organizationName,
+                  role: defaultSector,
                 }),
-                description: "No inicial",
-              },
+              ),
             },
           ],
         },
