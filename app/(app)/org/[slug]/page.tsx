@@ -17,7 +17,6 @@
 
 // Server actions para buscar dados
 import { getOrganizationBySlug } from "@/server/actions/organizations";
-import { getOrgChartSidebarData } from "@/server/actions/org-chart";
 import { getAllUsers } from "@/server/actions/users";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -42,23 +41,21 @@ export default async function OrganizationPage({ params }: { params: Params }) {
     notFound();
   }
 
-  const chartSidebar = await getOrgChartSidebarData(slug);
-
   // Busca usuários que NÃO são membros (para poder adicioná-los)
   const users = await getAllUsers(organization.id);
 
   return (
     <div className="flex flex-col lg:grid lg:grid-cols-5 gap-8">
-      {chartSidebar?.defaultPath && (
-        <div className="col-span-5 flex items-center justify-between rounded-lg border bg-card p-4">
-          <p className="text-sm text-muted-foreground">
-            Abra o organograma da organização na sidebar ou use o atalho abaixo.
-          </p>
-          <Button asChild size="sm">
-            <Link href={chartSidebar.defaultPath}>Abrir organograma</Link>
-          </Button>
-        </div>
-      )}
+      <div className="col-span-5 flex items-center justify-between rounded-lg border bg-card p-4">
+        <p className="text-sm text-muted-foreground">
+          Esta area e dedicada ao gerenciamento de membros e configuracoes da organizacao.
+        </p>
+        <Button asChild size="sm">
+          <Link href={`/org/${organization.slug}/organograma`}>
+            Ir para organogramas
+          </Link>
+        </Button>
+      </div>
       {/* Coluna principal (3/5 da largura): tabelas */}
       <div className="flex flex-col gap-4 col-span-3">
         {/* Tabela de membros da organização */}

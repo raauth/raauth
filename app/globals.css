@@ -80,7 +80,7 @@
   --sidebar-border: oklch(0.92 0.004 286.32);
   --sidebar-ring: oklch(0.705 0.015 286.067);
 
-  --header-h: 3.5rem;
+  --header-h: 0rem;
   --container-h: calc(100dvh - var(--header-h));
 }
 

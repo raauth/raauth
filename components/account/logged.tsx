@@ -2,9 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { type Organization } from "@/prisma/client/client";
 import { authClient } from "@/lib/auth-client";
-import { OrganizationSwitcher } from "@/components/account/organization-switcher";
 import { AccessLevelIcon } from "@/components/account/access-level-icon";
 import { AdminPanel } from "./buttons/admin-panel";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -27,14 +25,10 @@ interface LoggedAccountProps {
       image?: string | null;
     } | null;
   } | null;
-  organizations: Organization[];
-  preferredActiveOrganizationId?: string | null;
 }
 
 export function LoggedAccount({
   session,
-  organizations,
-  preferredActiveOrganizationId,
 }: LoggedAccountProps) {
   const router = useRouter();
 
@@ -62,13 +56,6 @@ export function LoggedAccount({
 
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          {organizations.length > 0 && (
-            <OrganizationSwitcher
-              organizations={organizations}
-              preferredActiveOrganizationId={preferredActiveOrganizationId}
-            />
-          )}
-
           <DropdownMenuItem asChild>
             <Link href="/configuracoes/conta">
               <Settings className="size-4" />
