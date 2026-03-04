@@ -6,6 +6,7 @@ import { authClient } from "@/lib/auth-client";
 import { AccessLevelIcon } from "@/components/account/access-level-icon";
 import { AdminPanel } from "./buttons/admin-panel";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import {
   DropdownMenuContent,
   DropdownMenuGroup,
@@ -33,26 +34,37 @@ export function LoggedAccount({
   session,
 }: LoggedAccountProps) {
   const router = useRouter();
+  const displayName = session?.user?.name?.trim() || "Conta";
+  const displayEmail = session?.user?.email?.trim() || "Sem e-mail";
 
   return (
     <>
-      <DropdownMenuTrigger asChild>
-        <Avatar>
-          <AvatarImage
-            src={session?.user?.image || undefined}
-            alt="Foto de perfil do usuário"
-          />
-          <AvatarFallback aria-label="Avatar padrão">
-            <CircleUser size={20} />
-          </AvatarFallback>
-        </Avatar>
-      </DropdownMenuTrigger>
+      <div className="flex min-w-0 items-center gap-1.5">
+        <DropdownMenuTrigger asChild>
+          <button
+            type="button"
+            className="flex min-w-0 flex-1 items-center gap-2 rounded-md px-1.5 py-1.5 text-left transition-colors hover:bg-sidebar-accent focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:outline-none"
+          >
+            <Avatar className="size-8">
+              <AvatarImage
+                src={session?.user?.image || undefined}
+                alt={`Foto de perfil de ${displayName}`}
+              />
+              <AvatarFallback aria-label="Avatar padrão">
+                <CircleUser size={18} />
+              </AvatarFallback>
+            </Avatar>
+            <span className="truncate text-sm font-medium">{displayName}</span>
+          </button>
+        </DropdownMenuTrigger>
+        <ThemeToggle className="shrink-0" />
+      </div>
 
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="start" side="bottom" className="w-60">
         <DropdownMenuLabel className="flex flex-col">
-          {session?.user?.name}
+          {displayName}
           <span className="text-xs font-normal text-muted-foreground">
-            {session?.user?.email}
+            {displayEmail}
           </span>
         </DropdownMenuLabel>
 

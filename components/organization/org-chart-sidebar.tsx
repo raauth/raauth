@@ -22,7 +22,6 @@ import { Input } from "@/components/ui/input";
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupAction,
   SidebarGroupContent,
@@ -35,7 +34,6 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-  SidebarRail,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
 
@@ -192,13 +190,10 @@ export function OrgChartSidebar({
 
   return (
     <>
-      <Sidebar variant="inset" collapsible="icon">
-        <SidebarHeader className="gap-1">
+      <Sidebar variant="floating" collapsible="offcanvas">
+        <SidebarHeader className="gap-2">
           {sidebarChrome && (
-            <>
-              <div className="px-2 pt-1">{sidebarChrome}</div>
-              <SidebarSeparator />
-            </>
+            <div className="px-2 pt-1">{sidebarChrome}</div>
           )}
 
           <div className="flex items-center gap-2 px-2 py-1.5">
@@ -230,6 +225,7 @@ export function OrgChartSidebar({
             <SidebarGroupLabel>Estrutura</SidebarGroupLabel>
             {canEdit && (
               <SidebarGroupAction
+                className="w-6 rounded-md border border-sidebar-border bg-sidebar text-sidebar-foreground/90 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                 aria-label="Criar cidade"
                 title="Criar cidade"
                 onClick={() => setCityDialogOpen(true)}
@@ -267,8 +263,7 @@ export function OrgChartSidebar({
 
                       {canEdit && (
                         <SidebarMenuAction
-                          showOnHover
-                          className="peer-data-[active=true]/menu-button:opacity-100"
+                          className="w-6 rounded-md border border-sidebar-border bg-sidebar text-sidebar-foreground/90 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground peer-data-[active=true]/menu-button:opacity-100"
                           aria-label={`Criar setor em ${group.city}`}
                           title={`Criar setor em ${group.city}`}
                           onClick={(event) => {
@@ -284,7 +279,7 @@ export function OrgChartSidebar({
                       )}
 
                       {cityIsOpen && (
-                        <SidebarMenuSub>
+                        <SidebarMenuSub className="mx-0 ml-4 mt-0.5 border-sidebar-border/70 px-2.5">
                           {group.sectors.map((sectorPage) => (
                             <SidebarMenuSubItem key={sectorPage.chartId}>
                               <SidebarMenuSubButton
@@ -301,25 +296,6 @@ export function OrgChartSidebar({
                             </SidebarMenuSubItem>
                           ))}
 
-                          {canEdit && (
-                            <SidebarMenuSubItem>
-                              <SidebarMenuSubButton asChild className="h-8">
-                                <button
-                                  type="button"
-                                  className="cursor-pointer"
-                                  onClick={() =>
-                                    openSectorDialog({
-                                      city: group.city,
-                                      citySlug: group.citySlug,
-                                    })
-                                  }
-                                >
-                                  <Plus className="size-4" />
-                                  <span>Novo setor</span>
-                                </button>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          )}
                         </SidebarMenuSub>
                       )}
                     </SidebarMenuItem>
@@ -337,22 +313,6 @@ export function OrgChartSidebar({
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
-
-        {canEdit && (
-          <SidebarFooter className="group-data-[collapsible=icon]:hidden">
-            <Button
-              size="sm"
-              variant="outline"
-              className="w-full justify-start"
-              onClick={() => setCityDialogOpen(true)}
-            >
-              <Plus className="size-4" />
-              Nova cidade
-            </Button>
-          </SidebarFooter>
-        )}
-
-        <SidebarRail />
       </Sidebar>
 
       <Dialog open={isCityDialogOpen} onOpenChange={setCityDialogOpen}>

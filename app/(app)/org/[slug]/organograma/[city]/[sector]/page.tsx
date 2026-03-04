@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 
 import { OrgChartEditor } from "@/components/organization/org-chart-editor";
-import { Badge } from "@/components/ui/badge";
 import { getOrgChartPageData } from "@/server/actions/org-chart";
 
 type Params = Promise<{
@@ -28,18 +27,6 @@ export default async function OrganizationChartPage({
 
   return (
     <div className="flex h-full min-h-0 w-full flex-1 flex-col gap-3 rounded-xl border bg-card p-3">
-      <div className="flex flex-wrap items-center gap-2">
-        <Badge variant="secondary">{pageData.chart.city}</Badge>
-        <Badge variant="outline">{pageData.chart.sector}</Badge>
-      </div>
-
-      <div>
-        <h1 className="text-2xl font-semibold">Organograma</h1>
-        <p className="text-sm text-muted-foreground">
-          Estrutura da organizacao para {pageData.chart.city} / {pageData.chart.sector}.
-        </p>
-      </div>
-
       <OrgChartEditor
         organizationSlug={pageData.organization.slug}
         chartId={pageData.chart.id}

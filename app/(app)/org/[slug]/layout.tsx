@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { OrgWorkspaceShell } from "@/components/organization/org-workspace-shell";
+import { OrgWorkspaceTitle } from "@/components/organization/org-workspace-title";
 import { getOrgChartSidebarData } from "@/server/actions/org-chart";
 
 type Params = Promise<{ slug: string }>;
@@ -25,7 +26,13 @@ export default async function OrganizationWorkspaceLayout({
       organizationSlug={sidebarData.organization.slug}
       canEdit={sidebarData.canEdit}
       groups={sidebarData.groups}
-      title="Workspace da organizacao"
+      title={
+        <OrgWorkspaceTitle
+          organizationSlug={sidebarData.organization.slug}
+          groups={sidebarData.groups}
+          fallbackTitle="Workspace da organizacao"
+        />
+      }
     >
       {children}
     </OrgWorkspaceShell>

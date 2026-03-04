@@ -1,6 +1,7 @@
+import type { CSSProperties } from "react";
+
 import { Account } from "@/components/account/account";
 import { OrgChartSidebar } from "@/components/organization/org-chart-sidebar";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import type { OrgChartCityGroup } from "@/lib/org-chart-navigation";
 
@@ -9,7 +10,7 @@ interface OrgWorkspaceShellProps {
   organizationSlug: string;
   canEdit: boolean;
   groups: OrgChartCityGroup[];
-  title?: string;
+  title?: React.ReactNode;
   children: React.ReactNode;
 }
 
@@ -18,28 +19,39 @@ export function OrgWorkspaceShell({
   organizationSlug,
   canEdit,
   groups,
-  title = "Organograma por cidade e setor",
+  title = <p className="pt-1 text-sm text-muted-foreground">Organograma por cidade e setor</p>,
   children,
 }: OrgWorkspaceShellProps) {
+  const sidebarStyle = {
+    "--sidebar-width": "19rem",
+  } as CSSProperties;
+
   return (
-    <SidebarProvider className="h-svh w-full overflow-hidden rounded-xl border">
+    <SidebarProvider
+      className="h-svh w-full overflow-hidden rounded-xl border"
+      style={sidebarStyle}
+    >
       <OrgChartSidebar
         organizationName={organizationName}
         organizationSlug={organizationSlug}
         canEdit={canEdit}
         groups={groups}
         sidebarChrome={
-          <div className="flex items-center justify-end gap-2">
+          <div className="w-full">
             <Account organizationSlug={organizationSlug} />
-            <ThemeToggle />
           </div>
         }
       />
 
       <SidebarInset className="h-full min-h-0 overflow-hidden">
-        <div className="flex h-12 shrink-0 items-center gap-2 border-b px-3">
-          <SidebarTrigger />
-          <p className="text-sm text-muted-foreground">{title}</p>
+        <div className="flex min-h-12 shrink-0 items-center gap-2 border-b px-3 py-2">
+          <SidebarTrigger className="mt-0.5 shrink-0" />
+          <div className="min-w-0 flex-1">{title}</div>
+          <div
+            id="org-workspace-header-actions"
+            className="flex shrink-0 items-center gap-2"
+            aria-label="Acoes do organograma"
+          />
         </div>
         <div className="flex flex-1 min-h-0 overflow-hidden p-3">{children}</div>
       </SidebarInset>

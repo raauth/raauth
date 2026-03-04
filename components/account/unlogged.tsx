@@ -9,19 +9,29 @@ import {
 import Link from "next/link";
 
 import { LogIn, SquareUser, UserPlus } from "lucide-react";
-import { Button } from "../ui/button";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 export function UnloggedAccount() {
   return (
     <>
-      <DropdownMenuTrigger asChild>
-        <Button variant={"outline"} size={"icon"}>
-          <SquareUser />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <div className="flex min-w-0 items-center gap-1.5">
+        <DropdownMenuTrigger asChild>
+          <button
+            type="button"
+            className="flex min-w-0 flex-1 items-center gap-2 rounded-md px-1.5 py-1.5 text-left transition-colors hover:bg-sidebar-accent focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:outline-none"
+          >
+            <span className="flex size-8 items-center justify-center rounded-full bg-muted text-muted-foreground">
+              <SquareUser className="size-4" />
+            </span>
+            <span className="truncate text-sm font-medium">Conta</span>
+          </button>
+        </DropdownMenuTrigger>
+        <ThemeToggle className="shrink-0" />
+      </div>
+
+      <DropdownMenuContent align="start" side="bottom" className="w-56">
         {/* Conteúdo do menu suspenso para usuário não autenticado */}
-        <DropdownMenuLabel>Olá, usuário!</DropdownMenuLabel>
+        <DropdownMenuLabel>Acesse sua conta</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
