@@ -24,6 +24,17 @@ interface CreateOrgChartPageInput {
   sector: string;
 }
 
+interface CreateOrgChartCityInput {
+  organizationSlug: string;
+  city: string;
+}
+
+interface CreateOrgChartSectorInput {
+  organizationSlug: string;
+  citySlug: string;
+  sector: string;
+}
+
 interface SaveOrganizationChartLayoutInput {
   organizationSlug: string;
   chartId: string;
@@ -417,6 +428,163 @@ export async function createOrgChartPage({
       citySlug,
       sectorSlug,
     }),
+  };
+}
+
+export async function createOrgChartCity({
+  organizationSlug,
+  city,
+}: CreateOrgChartCityInput) {
+  const context = await getOrganizationMembershipContext(organizationSlug);
+  if (!context) {
+    return { success: false as const, reason: "NOT_FOUND" as const };
+  }
+
+  if (!context.canEdit) {
+    return { success: false as const, reason: "FORBIDDEN" as const };
+  }
+
+  const normalizedCity = city.trim();
+  if (!normalizedCity) {
+    return { success: false as const, reason: "CITY_REQUIRED" as const };
+  }
+
+  const citySlug = normalizeOrgChartSegment(normalizedCity);
+  const defaultSector = "Geral";
+  const defaultSectorSlug = normalizeOrgChartSegment(defaultSector);
+
+  const existingCity = await db.organizationChart.findFirst({
+    where: {
+      organizationId: context.organizationId,
+      citySlug,
+    },
+    orderBy: {
+      sector: "asc",
+    },
+    select: {
+      id: true,
+      citySlug: true,
+      sectorSlug: true,
+    },
+  });
+
+  if (existingCity) {
+    return {
+      success: true as const,
+      chartId: existingCity.id,
+      path: buildOrgChartPath({
+        organizationSlug: context.organizationSlug,
+        citySlug: existingCity.citySlug,
+        sectorSlug: existingCity.sectorSlug,
+      }),
+      alreadyExists: true as const,
+    };
+  }
+
+  const chart = await createChart({
+    context,
+    city: normalizedCity,
+    citySlug,
+    sector: defaultSector,
+    sectorSlug: defaultSectorSlug,
+  });
+
+  return {
+    success: true as const,
+    chartId: chart.id,
+    path: buildOrgChartPath({
+      organizationSlug: context.organizationSlug,
+      citySlug,
+      sectorSlug: defaultSectorSlug,
+    }),
+    alreadyExists: false as const,
+  };
+}
+
+export async function createOrgChartSector({
+  organizationSlug,
+  citySlug,
+  sector,
+}: CreateOrgChartSectorInput) {
+  const context = await getOrganizationMembershipContext(organizationSlug);
+  if (!context) {
+    return { success: false as const, reason: "NOT_FOUND" as const };
+  }
+
+  if (!context.canEdit) {
+    return { success: false as const, reason: "FORBIDDEN" as const };
+  }
+
+  const normalizedSector = sector.trim();
+  if (!normalizedSector) {
+    return { success: false as const, reason: "SECTOR_REQUIRED" as const };
+  }
+
+  const cityRecord = await db.organizationChart.findFirst({
+    where: {
+      organizationId: context.organizationId,
+      citySlug,
+    },
+    orderBy: {
+      sector: "asc",
+    },
+    select: {
+      city: true,
+      citySlug: true,
+    },
+  });
+
+  if (!cityRecord) {
+    return { success: false as const, reason: "CITY_NOT_FOUND" as const };
+  }
+
+  const sectorSlug = normalizeOrgChartSegment(normalizedSector);
+
+  const existingChart = await db.organizationChart.findUnique({
+    where: {
+      organizationId_citySlug_sectorSlug: {
+        organizationId: context.organizationId,
+        citySlug: cityRecord.citySlug,
+        sectorSlug,
+      },
+    },
+    select: {
+      id: true,
+      citySlug: true,
+      sectorSlug: true,
+    },
+  });
+
+  if (existingChart) {
+    return {
+      success: true as const,
+      chartId: existingChart.id,
+      path: buildOrgChartPath({
+        organizationSlug: context.organizationSlug,
+        citySlug: existingChart.citySlug,
+        sectorSlug: existingChart.sectorSlug,
+      }),
+      alreadyExists: true as const,
+    };
+  }
+
+  const chart = await createChart({
+    context,
+    city: cityRecord.city,
+    citySlug: cityRecord.citySlug,
+    sector: normalizedSector,
+    sectorSlug,
+  });
+
+  return {
+    success: true as const,
+    chartId: chart.id,
+    path: buildOrgChartPath({
+      organizationSlug: context.organizationSlug,
+      citySlug: cityRecord.citySlug,
+      sectorSlug,
+    }),
+    alreadyExists: false as const,
   };
 }
 

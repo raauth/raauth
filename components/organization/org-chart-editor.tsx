@@ -127,7 +127,7 @@ export function OrgChartEditor({
   }, [canEdit]);
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex h-full min-h-0 flex-col gap-3">
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-card p-3">
         <p className="text-sm text-muted-foreground">{headerText}</p>
 
@@ -145,7 +145,7 @@ export function OrgChartEditor({
         </div>
       </div>
 
-      <div className="h-[68vh] min-h-[520px] w-full overflow-hidden rounded-xl border bg-card">
+      <div className="flex-1 min-h-0 w-full overflow-hidden rounded-xl border bg-card">
         <ReactFlow
           nodes={nodes}
           edges={edges}

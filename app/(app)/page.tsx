@@ -18,39 +18,161 @@
 // - Qualquer conteúdo específico do seu projeto
 // ============================================================
 
+import { redirect } from "next/navigation";
+
+import { Account } from "@/components/account/account";
+import { OrgChartEditor } from "@/components/organization/org-chart-editor";
+import { OrgChartSidebar } from "@/components/organization/org-chart-sidebar";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { Badge } from "@/components/ui/badge";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { db } from "@/lib/db";
+import { getOrgChartPageData, getOrgChartSidebarData } from "@/server/actions/org-chart";
 import { getServerSession } from "@/server/actions/session";
 
 export default async function HomePage() {
-  // Obtém a sessão do usuário (se está logado)
   const session = await getServerSession();
 
-  // ── Cenário 1: Sem organização ativa ────────────────────
-  // Quando o usuário não tem nenhuma organização selecionada.
-  // Isso acontece quando:
-  // - Ele acabou de criar a conta e não pertence a nenhuma org
-  // - Ele tem várias orgs mas não selecionou nenhuma
   if (!session?.session?.activeOrganizationId) {
+    redirect("/criar-organizacao");
+  }
+
+  const activeOrganization = await db.organization.findUnique({
+    where: {
+      id: session.session.activeOrganizationId,
+    },
+    select: {
+      slug: true,
+      name: true,
+    },
+  });
+
+  if (!activeOrganization) {
+    redirect("/criar-organizacao");
+  }
+
+  const sidebarData = await getOrgChartSidebarData(activeOrganization.slug);
+  if (!sidebarData) {
+    redirect("/criar-organizacao");
+  }
+
+  const firstChart = sidebarData.groups[0]?.sectors[0];
+
+  if (!firstChart) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
-        <h2 className="text-2xl font-bold mb-2">Bem-vindo ao RAAuth</h2>
-        <p className="text-muted-foreground">
-          Selecione uma organização no menu de conta para começar.
-        </p>
-      </div>
+      <SidebarProvider className="h-[calc(100svh-2rem)] w-full overflow-hidden rounded-xl border">
+        <OrgChartSidebar
+          organizationName={sidebarData.organization.name}
+          organizationSlug={sidebarData.organization.slug}
+          canEdit={sidebarData.canEdit}
+          groups={sidebarData.groups}
+          sidebarChrome={
+            <div className="flex items-center justify-end gap-2">
+              <Account />
+              <ThemeToggle />
+            </div>
+          }
+        />
+        <SidebarInset className="h-full min-h-0 overflow-hidden">
+          <div className="flex h-12 items-center gap-2 border-b px-3">
+            <SidebarTrigger />
+            <p className="text-sm text-muted-foreground">
+              Organograma por cidade e setor
+            </p>
+          </div>
+          <div className="flex flex-1 min-h-0 items-center justify-center p-4">
+            <p className="text-sm text-muted-foreground">
+              Nenhum organograma disponivel para a organizacao ativa.
+            </p>
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
     );
   }
 
-  // ── Cenário 2: Com organização ativa ────────────────────
-  // O usuário tem uma org selecionada — mostra o painel.
-  //
-  // 💡 CUSTOMIZE AQUI: substitua este bloco pelo conteúdo
-  // principal do seu aplicativo.
+  const pageData = await getOrgChartPageData({
+    organizationSlug: activeOrganization.slug,
+    citySlug: firstChart.citySlug,
+    sectorSlug: firstChart.sectorSlug,
+  });
+
+  if (!pageData) {
+    return (
+      <SidebarProvider className="h-[calc(100svh-2rem)] w-full overflow-hidden rounded-xl border">
+        <OrgChartSidebar
+          organizationName={sidebarData.organization.name}
+          organizationSlug={sidebarData.organization.slug}
+          canEdit={sidebarData.canEdit}
+          groups={sidebarData.groups}
+          sidebarChrome={
+            <div className="flex items-center justify-end gap-2">
+              <Account />
+              <ThemeToggle />
+            </div>
+          }
+        />
+        <SidebarInset className="h-full min-h-0 overflow-hidden">
+          <div className="flex h-12 items-center gap-2 border-b px-3">
+            <SidebarTrigger />
+            <p className="text-sm text-muted-foreground">
+              Organograma por cidade e setor
+            </p>
+          </div>
+          <div className="flex flex-1 min-h-0 items-center justify-center p-4">
+            <p className="text-sm text-muted-foreground">
+              Nao foi possivel carregar o organograma inicial.
+            </p>
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
+    );
+  }
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
-      <h2 className="text-2xl font-bold mb-2">Bem-vindo ao RAAuth</h2>
-      <p className="text-muted-foreground">
-        Você está conectado. Use o menu de conta para gerenciar sua organização.
-      </p>
-    </div>
+    <SidebarProvider className="h-[calc(100svh-2rem)] w-full overflow-hidden rounded-xl border">
+      <OrgChartSidebar
+        organizationName={sidebarData.organization.name}
+        organizationSlug={sidebarData.organization.slug}
+        canEdit={sidebarData.canEdit}
+        groups={sidebarData.groups}
+        sidebarChrome={
+          <div className="flex items-center justify-end gap-2">
+            <Account />
+            <ThemeToggle />
+          </div>
+        }
+      />
+      <SidebarInset className="h-full min-h-0 overflow-hidden">
+        <div className="flex h-12 items-center gap-2 border-b px-3">
+          <SidebarTrigger />
+          <p className="text-sm text-muted-foreground">
+            Organograma por cidade e setor
+          </p>
+        </div>
+        <div className="flex flex-1 min-h-0 overflow-hidden p-3">
+          <div className="flex h-full min-h-0 flex-col gap-3 rounded-xl border bg-card p-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="secondary">{pageData.chart.city}</Badge>
+              <Badge variant="outline">{pageData.chart.sector}</Badge>
+            </div>
+
+            <div>
+              <h1 className="text-2xl font-semibold">Organograma</h1>
+              <p className="text-sm text-muted-foreground">
+                Estrutura da organizacao para {pageData.chart.city} / {pageData.chart.sector}.
+              </p>
+            </div>
+
+            <OrgChartEditor
+              organizationSlug={pageData.organization.slug}
+              chartId={pageData.chart.id}
+              canEdit={pageData.canEdit}
+              initialNodes={pageData.nodes}
+              initialEdges={pageData.edges}
+            />
+          </div>
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
